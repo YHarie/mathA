@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>集合に関する問題</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; text-align: left; }
+    .question, #feedback { margin-bottom: 10px; font-size: 18px; text-align: left; }
+    button { padding: 10px 20px; font-size: 16px; margin-right: 20px; }
+  </style>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<center>
+<h1>集合に関する問題</h1>
+</center>
+<div class="question" id="question"></div>
+<div style="margin-top: 20px;">
+  <button type="button" onclick="showAnswers()">解答</button>
+  <button type="button" onclick="generateQuestion()">再出題</button>
+</div>
+<div id="feedback" style="margin-top: 20px;"></div>
+<script>
+MathJax = { chtml: { displayAlign: "left", }
+};
+</script>
+<script>
+function getRandomInt(min, max, exclude = []) {
+  let val;
+  do {
+    val = Math.floor(Math.random() * (max - min + 1)) + min;
+  } while (exclude.includes(val));
+  return val;
+}
+
+function generateUniqueRandomSet(count, min, max) {
+  const set = new Set();
+  while (set.size < count) {
+    set.add(getRandomInt(min, max, Array.from(set)));
+  }
+  return Array.from(set).sort((a, b) => a - b);
+}
+
+function arrayToSetString(arr) {
+  return '\\{' + arr.join('，') + '\\}';
+}
+
+function arrayDifference(u, a) {
+  return u.filter(x => !a.includes(x));
+}
+
+function arrayIntersection(a, b) {
+  return a.filter(x => b.includes(x));
+}
+
+function arrayUnion(a, b) {
+  return Array.from(new Set([...a, ...b])).sort((x, y) => x - y);
+}
+
+function arraySymmetricDiff(a, b) {
+  return [...new Set([...a, ...b].filter(x => !(a.includes(x) && b.includes(x))))].sort((x, y) => x - y);
+}
+
+function generateQuestion() {
+  const U = [...Array(10).keys()].map(i => i + 1);
+  const i = getRandomInt(3, 6);
+  const j = getRandomInt(3, 6);
+  const A = generateUniqueRandomSet(i, 1, 10);
+  const B = generateUniqueRandomSet(j, 1, 10);
+  const c1 = getRandomInt(1, 2);
+  const c2 = getRandomInt(1, 2);
+  const d1 = c1 === 1 ? '\\cup' : '\\cap';
+  const d2 = c2 === 1 ? '\\cup' : '\\cap';
+
+  const Aset = new Set(A), Bset = new Set(B);
+  const notA = arrayDifference(U, A);
+  const notB = arrayDifference(U, B);
+  const AandB = arrayIntersection(A, B);
+  const AorB = arrayUnion(A, B);
+  const notBd1notA = c1 === 2 ? arrayDifference(U, [...A, ...B]) : arraySymmetricDiff(U, AandB);
+  const notAd2B = c2 === 2 ? arraySymmetricDiff(U, AandB) : arrayDifference(U, [...A, ...B]);
+
+  window.correctAnswers = [
+    AandB.length > 0 ? arrayToSetString(AandB) : '\\varnothing',
+    arrayToSetString(AorB),
+    arrayToSetString(notB),
+    arrayToSetString(notBd1notA),
+    arrayToSetString(notAd2B),
+  ];
+
+  const questionText = `$$U=\\{1，2，3，4，5，6，7，8，9，10\\}を全体集合とする。$$
+  $$A=${arrayToSetString(A)}，B=${arrayToSetString(B)}$$とするとき，次の集合を求めよ。<br><br>
+  $$(1)	~~~ A \\cap B ~~~~~~~~~  (2) ~~~A \\cup B ~~~~~~~~~~  (3) ~~~\\overline{B}$$<br>
+  $$(4) ~~~\\overline{A} ${d1} \\overline{B}~~~~~~~~~~  (5) ~~~\\overline{A ${d2} B}$$<br>`;
+
+  document.getElementById("question").innerHTML = questionText;
+  document.getElementById("feedback").innerHTML = "";
+  MathJax.typeset();
+}
+
+function showAnswers() {
+  let feedbackText = "";
+  for (let i = 0; i < window.correctAnswers.length; i++) {
+    feedbackText += `$$( ${i + 1} )　 答え\\mbox{：}${window.correctAnswers[i]}$$`;
+  }
+  document.getElementById("feedback").innerHTML = feedbackText;
+  MathJax.typeset();
+}
+
+generateQuestion();
+</script>
+</body>
+</html>

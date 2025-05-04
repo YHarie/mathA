@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>倍数に関する問題</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .question { margin-bottom: 10px; font-size: 18px; text-align: left; }
+    label, input, button { display: inline-block; margin-top: 10px; font-size: 16px; }
+    input { width: 80px; height: 32px; font-size: 16px; margin-left: 10px; }
+    button { padding: 10px 20px; font-size: 16px; margin-right: 20px; }
+    .correct { color: green; }
+    .incorrect { color: red; }
+  </style>
+</head>
+<body>
+<h1>倍数に関する問題</h1>
+<div class="question" id="question"></div>
+<div id="inputs">
+  (1) <input id="a1" type="number"><br>
+  (2) <input id="a2" type="number"><br>
+  (3) <input id="a3" type="number"><br>
+  (4) <input id="a4" type="number"><br>
+  (5) <input id="a5" type="number"><br>
+</div>
+<div style="margin-top: 20px;">
+  <button type="button" onclick="checkAnswers()">答え合わせ</button>　　
+  <button type="button" onclick="generateQuestion()">再出題</button>
+</div>
+<div id="feedback" style="margin-top: 20px;"></div>
+
+<script>
+MathJax = { chtml: { displayAlign: "left", }
+};
+</script>
+
+
+<script>
+function getRandomInt(min, max, exclude = []) {
+  let val;
+  do {
+    val = Math.floor(Math.random() * (max - min + 1)) + min;
+  } while (exclude.includes(val));
+  return val;
+}
+
+function lcm(a, b) {
+  const gcd = (x, y) => y === 0 ? x : gcd(y, x % y);
+  return Math.abs(a * b) / gcd(a, b);
+}
+
+function generateQuestion() {
+  const nValues = [50, 100, 200];
+  const n = nValues[Math.floor(Math.random() * nValues.length)];
+  const r1 = getRandomInt(2, 9);
+  const r2 = getRandomInt(2, 9, [r1]);
+
+  const q1 = Math.floor(n / r1);
+  const q2 = Math.floor(n / r2);
+  const q3 = Math.floor(n / lcm(r1, r2));
+  const q4 = q1 + q2 - q3;
+
+  window.correctAnswers = [q1, n - q2, q3, q4, q1 - q3];
+
+  const questionText = `1から${n}までの自然数の中で，次の数はいくつあるか。<br><br>
+  (1) ${r1}で割り切れる数<br>
+  (2) ${r2}の倍数でない数<br>
+  (3) ${r1}と${r2}の両方で割り切れる数<br>
+  (4) ${r1}と${r2}の少なくとも一方で割り切れる数<br>
+  (5) ${r1}の倍数であるが，${r2}の倍数でない数<br>`;
+
+  document.getElementById("question").innerHTML = questionText;
+  document.getElementById("feedback").innerHTML = "";
+
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById(`a${i}`).value = "";
+  }
+}
+
+function checkAnswers() {
+  let feedbackText = "";
+  for (let i = 1; i <= 5; i++) {
+    const userAnswer = parseInt(document.getElementById(`a${i}`).value);
+    const correct = window.correctAnswers[i - 1];
+    if (userAnswer === correct) {
+      feedbackText += `( ${i} ) 正解！<br>`;
+    } else {
+      feedbackText += `( ${i} ) 不正解。正解は ${correct} です。<br>`;
+    }
+  }
+  document.getElementById("feedback").innerHTML = feedbackText;
+}
+
+generateQuestion();
+</script>
+</body>
+</html>
