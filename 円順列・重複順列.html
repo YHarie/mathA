@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>円順列・重複順列問題</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; text-align: left; }
+    .question, #feedback { margin-bottom: 10px; font-size: 18px; text-align: left; }
+    button { padding: 10px 20px; font-size: 16px; margin-right: 20px; }
+    input[type="number"] { font-size: 16px; margin-left: 10px; width: 80px; }
+  </style>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+<h1>円順列・重複順列問題</h1>
+<div class="question" id="question"></div>
+<div>
+  <label for="answer">答え：<input type="number" id="answer"> 通り</label>
+</div>
+<div style="margin-top: 20px;">
+  <button type="button" onclick="checkAnswer()">答え合わせ</button>
+  <button type="button" onclick="generateQuestion()">再出題</button>
+</div>
+<div id="feedback" style="margin-top: 20px;"></div>
+
+
+<script>
+MathJax = { chtml: { displayAlign: "left", }
+};
+</script>
+
+<script>
+function getRandomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function factorial(n) {
+  let result = 1;
+  for (let i = 1; i <= n; i++) result *= i;
+  return result;
+}
+
+function productRange(from, to) {
+  let result = 1;
+  for (let i = from; i <= to; i++) result *= i;
+  return result;
+}
+
+function generateQuestion() {
+  const i = getRandomInt(1, 4);
+  const n = getRandomInt(3, 7);
+  const r = getRandomInt(2, 3);
+  let questionText = '', correctAnswer = 0;
+
+  const upperChars = Array.from({length: n}, (_, i) => String.fromCharCode(65 + i)).join(',');
+  const lowerChars = Array.from({length: n}, (_, i) => String.fromCharCode(97 + i)).join(',');
+  const numbers = Array.from({length: r}, (_, i) => i + 1).join(',');
+
+  if (i === 1) {
+    questionText = `$$ ${n}~人が円卓を囲んで座るとき，並び方は何通りあるか。$$`;
+    correctAnswer = productRange(1, n - 1);
+
+  } else if (i === 2) {
+    questionText = `$$　\\mbox{${upperChars}} ~の~ ${n}~人が輪の形に並ぶとき，~\\mbox{A}~と~\\mbox{B}~が隣り合うような並び方は何通りあるか。$$`;
+    correctAnswer = productRange(1, n - 2) * 2;
+
+  } else if (i === 3) {
+    questionText = `$$ ${n} 個の文字~ ${lowerChars} ~から，重複を許して ~${r}~ 個取り出して ~1~列に並べるとき，文字列は何通りできるか。$$`;
+    correctAnswer = Math.pow(n, r);
+
+  } else if (i === 4) {
+    questionText = `$$ ${r}個の数字 ${numbers}~を重複を許して使ってできる ~${n}~ 桁の整数は何個あるか。$$`;
+    correctAnswer = Math.pow(r, n);
+  }
+
+  window.correctAnswer = correctAnswer;
+  document.getElementById("question").innerHTML = questionText;
+  document.getElementById("feedback").innerHTML = "";
+  document.getElementById("answer").value = "";
+  MathJax.typeset();
+}
+
+function checkAnswer() {
+  const userAnswer = parseInt(document.getElementById("answer").value);
+  const feedback = userAnswer === window.correctAnswer ? '正解です！' : `不正解です。正解は ${window.correctAnswer} 通りです。`;
+  document.getElementById("feedback").innerText = feedback;
+}
+
+generateQuestion();
+</script>
+</body>
+</html>
