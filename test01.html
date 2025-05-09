@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>集合に関する問題</title>
+ <style>
+  body {
+    font-family: sans-serif;
+    padding: 20px;
+    text-align: left;
+  }
+  .question, #feedback, #CsetDisplay {
+    margin-bottom: 10px;
+    font-size: 18px;
+    text-align: left;
+  }
+  button {
+    padding: 10px 20px;
+    font-size: 16px;
+    margin-right: 20px;
+  }
+
+  /* ←←← 追加：MathJax SVG 出力を左揃えにする */
+  mjx-container[jax="SVG"] {
+    text-align: left !important;
+  }
+</style>
+
+  <!-- MathJax SVG設定 -->
+  <script>
+    window.MathJax = {
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']]
+      },
+      svg: {
+        fontCache: 'global'
+      },
+      startup: {
+        typeset: false
+      }
+    };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+
+  <!-- html2pdf.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+  <center>
+    <h1>集合に関する問題</h1>
+  </center>
+
+  <div id="contentToExport">
+    <div class="question" id="question"></div>
+    <div id="CsetDisplay"></div>
+    <div id="feedback" style="margin-top: 20px;"></div>
+  </div>
+
+  <div style="margin-top: 20px;">
+    <button type="button" onclick="showAnswers()">解答</button>
+    <button type="button" onclick="generateQuestion()">再出題</button>
+  </div>
+
+  <script>
+    function getRandomInt(min, max, exclude = []) {
+      let val;
+      do {
+        val = Math.floor(Math.random() * (max - min + 1)) + min;
+      } while (exclude.includes(val));
+      return val;
+    }
+
+    function generateUniqueRandomSet(count, min, max) {
+      const set = new Set();
+      while (set.size < count) {
+        set.add(getRandomInt(min, max, Array.from(set)));
+      }
+      return Array.from(set).sort((a, b) => a - b);
+    }
+
+   function arrayToSetString(arr) {
+  if (arr.length === 0) {
+    return '\\varnothing';
+  }
+  return '\\{' + arr.join('，') + '\\}';
+}
+
+
+    function arrayDifference(u, a) {
+      return u.filter(x => !a.includes(x));
+    }
+
+    function arrayIntersection(a, b) {
+      return a.filter(x => b.includes(x));
+    }
+
+    function arrayUnion(a, b) {
+      return Array.from(new Set([...a, ...b])).sort((x, y) => x - y);
+    }
+
+    function arraySymmetricDiff(a, b) {
+      return [...new Set([...a, ...b].filter(x => !(a.includes(x) && b.includes(x))))].sort((x, y) => x - y);
+    }
+
+    function generateQuestion() {
+      const U = [...Array(10).keys()].map(i => i + 1);
+      const i = getRandomInt(3, 6);
+      const j = getRandomInt(3, 6);
+      const A = generateUniqueRandomSet(i, 1, 10);
+      const B = generateUniqueRandomSet(j, 1, 10);
+      const C_candidates = generateUniqueRandomSet(5, 1, 10).filter(x => !A.includes(x));
+      const C = C_candidates.slice(0, 2).sort((a, b) => a - b);
+
+      const c1 = getRandomInt(1, 2);
+      const c2 = getRandomInt(1, 2);
+      const d1 = c1 === 1 ? '\\cup' : '\\cap';
+      const d2 = c2 === 1 ? '\\cup' : '\\cap';
+
+      const AandB = arrayIntersection(A, B);
+      const AorB = arrayUnion(A, B);
+      const notB = arrayDifference(U, B);
+      const notA = arrayDifference(U, A);
+      const notBd1notA = c1 === 2 ? arrayDifference(U, [...A, ...B]) : arraySymmetricDiff(U, AandB);
+      const notAd2C = c2 === 2 ? arraySymmetricDiff(U, arrayIntersection(A, C)) : arrayDifference(U, arrayUnion(A, C));
+
+      window.correctAnswers = [
+        AandB.length > 0 ? arrayToSetString(AandB) : '\\varnothing',
+        arrayToSetString(AorB),
+        arrayToSetString(arrayIntersection(A, C)),
+        arrayToSetString(arrayUnion(B, C)),
+        arrayToSetString(notB),
+        arrayToSetString(notBd1notA),
+        arrayToSetString(notAd2C),
+      ];
+
+      const questionText = `
+        $$U=\\{1，2，3，4，5，6，7，8，9，10\\}を全体集合とする。$$
+        $$A=${arrayToSetString(A)}，\\quad B=${arrayToSetString(B)}，\\quad C=${arrayToSetString(C)}$$とするとき，次の集合を求めよ。<br><br>
+        $$(1)~~~A \\cap B \\qquad (2)~~~A \\cup B \\qquad (3)~~~A \\cap C$$<br>
+        $$(4)~~~B \\cup C \\qquad (5)~~~\\overline{B}$$<br>
+        $$(6)~~~\\overline{A} ${d1} \\overline{B} \\qquad (7)~~~\\overline{A ${d2} C}$$<br>
+      `;
+
+      document.getElementById("question").innerHTML = questionText;
+      document.getElementById("feedback").innerHTML = "";
+      MathJax.typesetPromise();
+    }
+
+    function showAnswers() {
+      let feedbackText = "";
+      for (let i = 0; i < window.correctAnswers.length; i++) {
+        feedbackText += `$$( ${i + 1} )\\ 答え\\mbox{：}${window.correctAnswers[i]}$$\n`;
+      }
+      document.getElementById("feedback").innerHTML = feedbackText;
+      MathJax.typesetPromise();
+    }
+
+    function downloadPDF() {
+      MathJax.typesetPromise().then(() => {
+        const element = document.getElementById("contentToExport");
+        const opt = {
+          margin: 1,
+          filename: '集合問題.pdf',
+          image: { type: 'jpeg', quality: 0.98 },
+          html2canvas: { scale: 2 },
+          jsPDF: { unit: 'cm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().set(opt).from(element).save();
+      });
+    }
+
+    // 初回生成
+    generateQuestion();
+  </script>
+</body>
+</html>
