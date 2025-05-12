@@ -1,66 +1,70 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>順列基礎問題</title>
+  <meta charset="UTF-8" />
+  <title>順列の基礎</title>
   <style>
-      body {
+    html, body {
       margin: 0;
+      padding: 0;
+      height: 100%;
       font-family: sans-serif;
+    }
+
+    .container {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       height: 100vh;
     }
 
-    #problem-area {
-      flex: 1;
-      padding: 20px;
+    #left-area, #right-area {
+      padding: 1em;
+      box-sizing: border-box;
       overflow: auto;
-      background-color: #f0f0f0;
     }
 
-    #blackboard-area {
+    #left-area {
       flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background-color: #222;
-      padding: 10px;
+      background-color: #f9f9f9;
+      font-size: 1em;
+
     }
 
-    canvas {
-      border: 2px solid #fff;
-      background-color: #000;
+    #right-area {
+      flex: 1;
+      background-color: #222;
+      color: white;
+    }
+         body{font-size:1.3em;}
+
+    @media (orientation: portrait) {
+      .container {
+        flex-direction: column;
+      }
+
+      #left-area,#right-area {
+        height: 40vh;
+      }
+
+
+    body {
+    font-size: 18px;
+  }
+
+  input, select, button {
+    font-size: 18px;
+  }
+}
+    .correct { color: green; }
+    .incorrect { color: red; }
+
+    #blackboard {
+      width: 100%;
+      height: auto;
       touch-action: none;
     }
-
-    button {
-      margin-top: 10px;
-      padding: 10px;
-    }
   </style>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-</head>
-<body>
-<h1>順列基礎問題</h1>
-<div class="question" id="question"></div>
-<div>
-  <label for="answer">答え：<input type="number" id="answer"> 通り</label>
-</div>
-<div style="margin-top: 20px;">
-  <button type="button" onclick="checkAnswer()">答え合わせ</button>
-  <button type="button" onclick="generateQuestion()">再出題</button>
-</div>
-<div id="feedback" style="margin-top: 20px;"></div>
-
-<script>
-MathJax = { chtml: { displayAlign: "left", }
-};
-</script>
-
-
-<script>
+  <script>
 function getRandomInt(min, max, exclude = []) {
   let val;
   do {
@@ -80,29 +84,40 @@ function productRange(from, to) {
   for (let i = from; i <= to; i++) result *= i;
   return result;
 }
-
-function generateQuestion() {
-  const i = getRandomInt(1, 7);
-  const n = getRandomInt(3, 7);
-  const r = getRandomInt(1, 3);
-  let questionText = '', correctAnswer = 0;
+function createDescendingSequence(n, r) {
+  let result = [];
+  for (let i = 0; i < r; i++) {
+    result.push(n - i);
+  }
+  return result.join('・');  // 例: "6・5・4"
+}
+    function generateQuiz() { 
+      document.getElementById('feedback').textContent = '';
+      document.getElementById('solution').textContent = '';
+      let i = parseInt(document.getElementById('modeSelect').value);
+   const n = getRandomInt(3, 7);
+  const r=getRandomInt(1, n);
+      if (i === 0) i = getRandomInt(1, 3);
+  let question = '', answer = 0,solution='';
 
   if (i === 1) {
-    questionText = `$$_{${n}}P_{${r}}~の値を求めよ。$$`;
-    correctAnswer = productRange(n - r + 1, n);
-
+    question = `$$_{${n}}P_{${r}}~の値を求めよ。$$`;
+    answer = productRange(n - r + 1, n);
+    solution=`$$_{${n}}P_{${r}}=${createDescendingSequence(n, r)}=${answer}$$`;
   } else if (i === 2) {
-    questionText = `$$${n}! ~の値を求めよ。$$`;
-    correctAnswer = factorial(n);
+    question = `$$${n}! ~の値を求めよ。$$`;
+    answer = factorial(n);
+	solution=`$$${n}!=${createDescendingSequence(n, n)}=${answer}$$`;
+
 
   } else if (i === 3) {
-    questionText = `$$${n}~ 人から~ ${r}~人選んで1列に並べるときの並べ方を求めよ。$$`;
-    correctAnswer = productRange(n - r + 1, n);
-
+    question = `$$${n}~ 人から~ ${r}~人選んで1列に並べるときの並べ方を求めよ。$$`;
+    answer = productRange(n - r + 1, n);
+	solution=`$$_{${n}}P_{${r}}=${createDescendingSequence(n, r)}=${answer}$$`;
   } else if (i === 4) {
-    questionText = `$$~1~から ~${n}~ までの ~${n}~ 個の数字をすべて~1~列に並べるときの並べ方を求めよ。$$`;
-    correctAnswer = factorial(n);
-
+    question = `$$~1~から ~${n}~ までの ~${n}~ 個の数字をすべて~1~列に並べるときの並べ方を求めよ。$$`;
+    answer = factorial(n);
+	solution=`$$${n}!=${createDescendingSequence(n, n)}=${answer}$$`;
   } else if (i === 5) {
     let C = '';
     const wordList = {
@@ -113,32 +128,142 @@ function generateQuestion() {
       7: ['alchemy', 'caliber', 'crimson', 'crusade','chariot']
     };
     C = wordList[n][getRandomInt(0, wordList[n].length - 1)];
-    questionText = `$$ \\mbox{${C}} という単語の ~${n}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
-    correctAnswer = factorial(n);
-
+    question = `$$ \\mbox{${C}} という単語の ~${n}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
+    answer = factorial(n);
+	solution=`$$${n}!=${createDescendingSequence(n, n)}=${answer}$$`;
   } else if (i === 6) {
-    questionText = `$$~${n}~ 人を全員~1~列に並べるときの並べ方を求めよ。$$`;
-    correctAnswer = factorial(n);
-
+    question = `$$~${n}~ 人を全員~1~列に並べるときの並べ方を求めよ。$$`;
+    answer = factorial(n);
+	solution=`$$${n}!=${createDescendingSequence(n, n)}=${answer}$$`;
   } else if (i === 7) {
-    questionText = `$$1~から ~${n}~ までの ~${n}~ 個の数字から，~${r}~ 個選んで~1~列に並べるときの並べ方を求めよ。$$`;
-    correctAnswer = productRange(n - r + 1, n);
+    question = `$$1~から ~${n}~ までの ~${n}~ 個の数字から，~${r}~ 個選んで~1~列に並べるときの並べ方を求めよ。$$`;
+    answer = productRange(n - r + 1, n);
+	solution=`$$_{${n}}P_{${r}}=${createDescendingSequence(n, r)}=${answer}$$`;
   }
 
-  window.correctAnswer = correctAnswer;
-  document.getElementById("question").innerHTML = questionText;
-  document.getElementById("feedback").innerHTML = "";
-  document.getElementById("answer").value = "";
-  MathJax.typeset();
-}
+ document.getElementById('question').innerHTML = question;
+      document.getElementById('userInput').value = '';
+      window.correctAnswer = answer;
+      window.solutionText = solution;
+      MathJax.typeset();
+    }
 
-function checkAnswer() {
-  const userAnswer = parseInt(document.getElementById("answer").value);
-  const feedback = userAnswer === window.correctAnswer ? '正解です！' : `不正解です。正解は ${window.correctAnswer} 通りです。`;
-  document.getElementById("feedback").innerText = feedback;
-}
 
-generateQuestion();
-</script>
+      
+
+    function checkAnswer() {
+      const user = parseFloat(document.getElementById('userInput').value);
+      const correct = window.correctAnswer;
+      const feedback = document.getElementById('feedback');
+      feedback.textContent = (user === correct) ? '正解！' : `不正解。正解は ${correct} です。`;
+    }
+
+    function showSolution() {
+      document.getElementById('solution').innerHTML = window.solutionText;
+      MathJax.typeset();
+    }
+
+    window.onload = function () {
+      generateQuiz();
+      resizeCanvas();
+    };
+
+    function resizeCanvas() {
+      const canvas = document.getElementById('blackboard');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+  <script>
+    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, chtml: { displayAlign: "left" } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div id="left-area">
+      <h1>順列の基礎</h1>
+      <label>モード:
+        <select id="modeSelect" onchange="generateQuiz()">
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="0">0 (ランダム)</option>
+        </select>
+      </label>
+      <div id="question" class="question"></div>
+      <input type="number" id="userInput" placeholder="答えを入力">
+      <div>
+        <button onclick="checkAnswer()">答え合わせ</button>
+        <button onclick="showSolution()">解説</button>
+        <button onclick="generateQuiz()">再出題</button>
+      </div>
+      <div id="feedback" class="feedback"></div>
+      <div id="solution" class="solution"></div>
+    </div>
+    <div id="right-area">
+      <p>ここにメモを書いたり、図形を描いたりできます。</p>
+      <canvas id="blackboard"></canvas>
+<button onclick="clearBoard()">クリア</button>
+      
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('blackboard');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    canvas.addEventListener('mousedown', e => {
+      drawing = true;
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    });
+
+    canvas.addEventListener('mousemove', e => {
+      if (drawing) {
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('mouseleave', () => drawing = false);
+
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      ctx.beginPath();
+      ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+      drawing = true;
+    });
+
+    canvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (!drawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+
+    canvas.addEventListener('touchend', () => drawing = false);
+
+    function clearBoard() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  </script>
 </body>
 </html>
