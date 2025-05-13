@@ -1,36 +1,70 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <title>組み合わせ基礎問題</title>
+  <meta charset="UTF-8" />
+  <title>組み合わせの基礎</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; text-align: left; }
-    .question, #feedback { margin-bottom: 10px; font-size: 18px; text-align: left; }
-    button { padding: 10px 20px; font-size: 16px; margin-right: 20px; }
-    input[type="number"] { font-size: 16px; margin-left: 10px; width: 80px; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+    }
+
+    #left-area, #right-area {
+      padding: 1em;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+
+    #left-area {
+      flex: 1;
+      background-color: #f9f9f9;
+      font-size: 1em;
+
+    }
+
+    #right-area {
+      flex: 1;
+      background-color: #222;
+      color: white;
+    }
+         body{font-size:1.3em;}
+
+    @media (orientation: portrait) {
+      .container {
+        flex-direction: column;
+      }
+
+      #left-area,#right-area {
+        height: 40vh;
+      }
+j
+
+    body {
+    font-size: 2em;
+  }
+
+  input, select, button {
+    font-size: 2em;
+  }
+}
+    .correct { color: green; }
+    .incorrect { color: red; }
+
+    #blackboard {
+      width: 100%;
+      height: auto;
+      touch-action: none;
+    }
   </style>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-</head>
-<body>
-<h1>組み合わせ基礎問題</h1>
-<div class="question" id="question"></div>
-<div>
-  <label for="answer">答え：<input type="number" id="answer"> 通り</label>
-</div>
-<div style="margin-top: 20px;">
-  <button type="button" onclick="checkAnswer()">答え合わせ</button>
-  <button type="button" onclick="generateQuestion()">再出題</button>
-</div>
-<div id="feedback" style="margin-top: 20px;"></div>
-
-<script>
-MathJax = { chtml: { displayAlign: "left", }
-};
-</script>
-
-
-<script>
+  <script>
 function getRandomInt(min, max, exclude = []) {
   let val;
   do {
@@ -50,36 +84,58 @@ function productRange(from, to) {
   for (let i = from; i <= to; i++) result *= i;
   return result;
 }
+function createDescendingSequence(n, r) {
+  let result = [];
+  for (let i = 0; i < r; i++) {
+    result.push(n - i);
+  }
+  return result.join('・');  // 例: "6・5・4"
+}
+    function generateQuiz() { 
+      document.getElementById('feedback').textContent = '';
+      document.getElementById('solution').textContent = '';
+      let i = parseInt(document.getElementById('modeSelect').value);
+   const n = getRandomInt(3, 10);
+  const r=getRandomInt(0, n);
+ if (i === 0) i = getRandomInt(1, 3);
 
-function generateQuestion() {
-  const i = getRandomInt(1, 7);
-  const n = getRandomInt(3, 10);
-  const r = getRandomInt(0,n );
-  let questionText = '', correctAnswer = 0;
-
-  if (i === 1) {
-    questionText = `$$_{${n}}\\mbox{C}_{${r}}~の値を求めよ。$$`;
-    correctAnswer = productRange(n-r+1,n)/factorial(r);
+      if (i === 1) {
+    question = `$$_{${n}}\\mbox{C}_{${r}}~の値を求めよ。$$`;
+    answer = productRange(n-r+1,n)/factorial(r);
+	solution=`$$_{${n}}\\mbox{C}_{${r}}=\\frac{${createDescendingSequence(n, r)}}{${createDescendingSequence(r, r)}}=${answer}$$`;
 
   } else if (i === 2) {
-    questionText = `$$${n}~枚の絵はがきから~${r}~枚を選ぶ方法は何通りあるか。$$`;
-    correctAnswer = productRange(n-r+1,n)/factorial(r);
+    question = `$$${n}~枚の絵はがきから~${r}~枚を選ぶ方法は何通りあるか。$$`;
+    answer = productRange(n-r+1,n)/factorial(r);
+	solution=`$$_{${n}}\\mbox{C}_{${r}}=\\frac{${createDescendingSequence(n, r)}}{${createDescendingSequence(r, r)}}=${answer}$$`;
+
 
   } else if (i === 3) {
-    questionText = `$$${n+1}~ 角形の対角線の本数を求めよ。$$`;
-    correctAnswer = productRange(n,n+1)/factorial(2)-(n+1);
+    question = `$$${n+1}~ 角形の対角線の本数を求めよ。$$`;
+    answer = productRange(n,n+1)/factorial(2)-(n+1);
+	solution=`$$${n+1}角形の頂点から2点を1組決めて結ぶと線分が1本できる。$$
+$$線分の本数は全部で_{${n+1}}\\mbox{C}_{2}本ある。$$
+$$このうち，${n+1}本が辺であり，残りが対角線である。$$
+$$よって，_{${n+1}}\\mbox{C}_{2}-${n+1}=\\frac{${createDescendingSequence(n+1, 2)}}{${createDescendingSequence(2, 2)}}-${n+1}=${answer}$$`;
+
 
   } else if (i === 4) {
-     questionText = `$$${n+1}~ 角形の~3~個の頂点を結んでできる三角形の個数を求めよ$$`;
-    correctAnswer = productRange(n-1,n+1)/factorial(3);
+     question = `$$${n+1}~ 角形の~3~個の頂点を結んでできる三角形の個数を求めよ$$`;
+    answer = productRange(n-1,n+1)/factorial(3);
+	solution=`$$${n+1}角形の頂点のうち，どの3点も同一直線上にない。$$
+$$3点で三角形が1個できるから，求める個数は$$
+
+$$_{${n+1}}\\mbox{C}_{${3}}=\\frac{${createDescendingSequence(n+1, 3)}}{${createDescendingSequence(3, 3)}}=${answer}$$`;
 
 
   } else if (i === 5) {
-    const A = 'a，'.repeat(r);
+    const A = 'a，'.repeat(r+1);
     const B = 'b，'.repeat(n-r-1)+'b';
 
-    questionText = `$$ ${A}${B}~ という単語の ~${n}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
-    correctAnswer = productRange(n-r+1,n)/factorial(r);
+    question = `$$ ${A}${B}~ という単語の ~${n+1}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
+    answer = productRange(n-r+1,n+1)/factorial(r+1);
+solution=`$$ aが${r+1}個，bが${n-r}個あり，それを1列に並べるから$$
+$$\\frac{${n+1}!}{${r+1}!\\cdot${n-r}!}=${answer}$$`;
 
   } else if (i === 6) {
     const n1 = getRandomInt(2, 3);
@@ -90,28 +146,139 @@ function generateQuestion() {
     const B = 'b，'.repeat(n2);
     const C = 'c，'.repeat(n3 -1)+'c';
 
-    questionText = `$$ ${A}${B}${C}~ という単語の ~${n1 + n2 + n3}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
-    correctAnswer = factorial(n1+n2+n3)/(factorial(n1)*factorial(n2)*factorial(n3));
+    question = `$$ ${A}${B}${C}~ という単語の ~${n1 + n2 + n3}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
+    answer = factorial(n1+n2+n3)/(factorial(n1)*factorial(n2)*factorial(n3));
+solution=`$$ aが${n1}個，bが${n2}個，cが${n3}個あり，それを1列に並べるから$$
+$$\\frac{${n1+n2+n3}!}{${n1}!\\cdot${n2}!\\cdot${n3}!}=${answer}$$`;
   } 
     else if (i === 7) {
-    questionText = `$$${n-r+2}~本の平行線と，それに交わる ~${r+2}~ 本の平行線によってできる平行四辺形は何個あるか$$`;
-    correctAnswer = productRange(n-r+1,n-r+2)*productRange(r+1,r+2)/4;
+    question = `$$${n-r+2}~本の平行線と，それに交わる ~${r+2}~ 本の$$ $$平行線によってできる平行四辺形は何個あるか$$`;
+    answer = productRange(n-r+1,n-r+2)*productRange(r+1,r+2)/4;
+solution=`$$${n-r+2}~本の平行線から2本選び， ~${r+2}~ 本の平行線から2本選ぶと$$
+$$平行四辺形が1個できる。$$
+$$よって，_{${n-r+2}}\\mbox{C}_{2}\\cdot _{${r+1}}\\mbox{C}_{2}=${answer}$$`;
+
   }
+ document.getElementById('question').innerHTML = question;
+      document.getElementById('userInput').value = '';
+      window.correctAnswer = answer;
+      window.solutionText = solution;
+      MathJax.typeset();
+    }     
 
-  window.correctAnswer = correctAnswer;
-  document.getElementById("question").innerHTML = questionText;
-  document.getElementById("feedback").innerHTML = "";
-  document.getElementById("answer").value = "";
-  MathJax.typeset();
-}
+    function checkAnswer() {
+      const user = parseFloat(document.getElementById('userInput').value);
+      const correct = window.correctAnswer;
+      const feedback = document.getElementById('feedback');
+      feedback.textContent = (user === correct) ? '正解！' : `不正解。正解は ${correct} です。`;
+    }
 
-function checkAnswer() {
-  const userAnswer = parseInt(document.getElementById("answer").value);
-  const feedback = userAnswer === window.correctAnswer ? '正解です！' : `不正解です。正解は ${window.correctAnswer} 通りです。`;
-  document.getElementById("feedback").innerText = feedback;
-}
+    function showSolution() {
+      document.getElementById('solution').innerHTML = window.solutionText;
+      MathJax.typeset();
+    }
 
-generateQuestion();
-</script>
+    window.onload = function () {
+      generateQuiz();
+      resizeCanvas();
+    };
+
+    function resizeCanvas() {
+      const canvas = document.getElementById('blackboard');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+  <script>
+    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, chtml: { displayAlign: "left" } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div id="left-area">
+      <h1>組み合わせの基礎</h1>
+      <label>モード:
+        <select id="modeSelect" onchange="generateQuiz()">
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+	     <option value="6">6</option>
+     <option value="7">7</option>
+          <option value="0">ランダム</option>
+        </select>
+      </label>
+      <div id="question" class="question"></div>
+      <input type="number" id="userInput" placeholder="答えを入力">
+      <div>
+        <button onclick="checkAnswer()">答え合わせ</button>
+        <button onclick="showSolution()">解説</button>
+        <button onclick="generateQuiz()">再出題</button>
+      </div>
+      <div id="feedback" class="feedback"></div>
+      <div id="solution" class="solution"></div>
+    </div>
+    <div id="right-area">
+      <p>ここにメモを書いたり、図形を描いたりできます。</p>
+      <canvas id="blackboard"></canvas>
+<button onclick="clearBoard()">クリア</button>
+      
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('blackboard');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    canvas.addEventListener('mousedown', e => {
+      drawing = true;
+      ctx.beginPath();
+      ctx.moveTo(e.offsetX, e.offsetY);
+    });
+
+    canvas.addEventListener('mousemove', e => {
+      if (drawing) {
+        ctx.lineTo(e.offsetX, e.offsetY);
+        ctx.strokeStyle = "white";
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    });
+
+    canvas.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('mouseleave', () => drawing = false);
+
+    canvas.addEventListener('touchstart', e => {
+      e.preventDefault();
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      ctx.beginPath();
+      ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+      drawing = true;
+    });
+
+    canvas.addEventListener('touchmove', e => {
+      e.preventDefault();
+      if (!drawing) return;
+      const rect = canvas.getBoundingClientRect();
+      const touch = e.touches[0];
+      ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
+      ctx.strokeStyle = "white";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    });
+
+    canvas.addEventListener('touchend', () => drawing = false);
+
+    function clearBoard() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+  </script>
 </body>
 </html>
