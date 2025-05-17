@@ -163,11 +163,11 @@ $$[2]子ども，大人，子ども，\\cdots ~と並ぶとき$$
 $$[1]のときと同様に${answer/2}通りある。$$
 $$よって，和の法則より$$
 $$${answer/2}+${answer/2}=${answer}$$`;
-}else if(r1>r2){answer = factorial(r1)*factorial(r1);
+}else if(r1>r2){answer = factorial(r2)*factorial(r1);
 	solution=`$$子ども，大人と交互に並ぶとき，$$
 $$大人の並びかたが${r2}!~通り，子どもの並びかたが${r1}!~通りであるから$$
 $$積の法則より，~~${r2}!\\cdot ${r1}!=${answer}~通り$$`;
-	       }else{answer = factorial(r1)*factorial(r1);
+	       }else{answer = factorial(r2)*factorial(r1);
 	solution=`$$子ども，大人と交互に並ぶとき，$$
 $$大人の並びかたが${r2}!~通り，子どもの並びかたが${r1}!~通りであるから$$
 $$積の法則より，~~${r2}!\\cdot ${r1}!=${answer}~通り$$`; }
