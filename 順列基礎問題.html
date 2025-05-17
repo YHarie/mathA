@@ -97,7 +97,7 @@ function createDescendingSequence(n, r) {
       let i = parseInt(document.getElementById('modeSelect').value);
    const n = getRandomInt(3, 7);
   const r=getRandomInt(1, n);
-      if (i === 0) i = getRandomInt(1, 3);
+      if (i === 0) i = getRandomInt(3, 7);
   let question = '', answer = 0,solution='';
 
   if (i === 1) {
@@ -139,6 +139,48 @@ function createDescendingSequence(n, r) {
     question = `$$1~から ~${n}~ までの ~${n}~ 個の数字から，~${r}~ 個選んで~1~列に並べるときの並べ方を求めよ。$$`;
     answer = productRange(n - r + 1, n);
 	solution=`$$_{${n}}P_{${r}}=${createDescendingSequence(n, r)}=${answer}$$`;
+  }else if (i === 8) {
+	  let r1=getRandomInt(2,4);
+	  let r2=getRandomInt(r1-1,r1+1);
+	  let j=getRandomInt(1,3);
+	  if(j===1){
+    question = `$$大人${r2}~人 ，子ども~${r1}~人が~1~列に並ぶとき，子ども${r1}~人が続けて並ぶ並び方を求めよ。$$`;
+    answer = factorial(r2 +1)*factorial(r1);
+	solution=`$$子ども${r1}~人を１組として考えると$$
+ 	$$大人${r2}~人と1組を並べる順列であるから，${r2 +1}! 通り。$$
+  	$$さらに，子どもの並び方は${r1}!~通りである。$$
+   	$$よって，積の法則より${r2 +1}!\\cdot${r1}!=${answer}$$ `;
+	  }else if(j===2 ){
+question = `$$大人${r2}~人 ，子ども~${r1}~人が~1~列に並ぶとき，大人と子どもが交互に並ぶ並び方を求めよ。$$`;
+		  if(r1===r2){
+		   
+    answer = factorial(r1)*factorial(r1)*2;
+	solution=`$$並び方は次の[1]，[2]が考えられる。$$
+$$[1]大人，子ども，大人，\\cdots ~と並ぶとき$$
+$$大人の並びかたが${r1}!~通り，子どもの並びかたが${r1}!~通りであるから$$
+$$積の法則より，~~${r1}!\\cdot ${r1}!=${answer/2}~通り$$
+$$[2]子ども，大人，子ども，\\cdots ~と並ぶとき$$
+$$[1]のときと同様に${answer/2}通りある。$$
+$$よって，和の法則より$$
+$$${answer/2}+${answer/2}=${answer}$$`;
+}else if(r1>r2){answer = factorial(r1)*factorial(r1);
+	solution=`$$子ども，大人と交互に並ぶとき，$$
+$$大人の並びかたが${r2}!~通り，子どもの並びかたが${r1}!~通りであるから$$
+$$積の法則より，~~${r2}!\\cdot ${r1}!=${answer}~通り$$`;
+	       }else{answer = factorial(r1)*factorial(r1);
+	solution=`$$子ども，大人と交互に並ぶとき，$$
+$$大人の並びかたが${r2}!~通り，子どもの並びかたが${r1}!~通りであるから$$
+$$積の法則より，~~${r2}!\\cdot ${r1}!=${answer}~通り$$`; }
+	  }else{
+		  question = `$$大人${r1}~人 ，子ども~${r2}~人が~1~列に並ぶとき，大人が両端に並ぶ並び方を求めよ。$$`;
+		  answer = productRange(2, r1)*factorial(r1+r2 -2);
+		  solution=`$$はじめに大人${r1}~人を左端，右端に並べる方法は$$
+    	$$_{${r1}}P_{2}~通りある。$$
+ 	$$残りの大人${r1 -2}~人と子ども${r2}人の並び方は，${r2 + r1 -2}! 通り。$$
+   	$$よって，積の法則より_{${r1}}P_{2}\\cdot${r2 + r1 -2}!=${answer}$$ `;
+		  
+		  
+	  }
   }
 
  document.getElementById('question').innerHTML = question;
@@ -187,7 +229,7 @@ function createDescendingSequence(n, r) {
     <div id="left-area">
       <h1>順列の基礎</h1>
       <label>モード:
-        <select id="modeSelect" onchange="generateQuiz()">
+        <select id="modeSelect" onchange="generateQuiz()"style="padding: 1em 2em; font-size: 1.2rem;">
           <option value="1" selected>1</option>
           <option value="2">2</option>
           <option value="3">3</option>
@@ -195,15 +237,16 @@ function createDescendingSequence(n, r) {
           <option value="5">5</option>
           <option value="6">6</option>
           <option value="7">7</option>
+          <option value="8">順列の応用</option>
           <option value="0">0 (ランダム)</option>
         </select>
       </label>
       <div id="question" class="question"></div>
-      <input type="number" id="userInput" placeholder="答えを入力">
+      <input type="number" id="userInput" placeholder="答えを入力"style="padding: 1em 2em; font-size: 1.2rem;">
       <div>
-        <button onclick="checkAnswer()">答え合わせ</button>
-        <button onclick="showSolution()">解説</button>
-        <button onclick="generateQuiz()">再出題</button>
+        <button onclick="checkAnswer()"style="padding: 1em 2em; font-size: 1.2rem;">答え合わせ</button>
+        <button onclick="showSolution()"style="padding: 1em 2em; font-size: 1.2rem;">解説</button>
+        <button onclick="generateQuiz()"style="padding: 1em 2em; font-size: 1.2rem;">再出題</button>
       </div>
       <div id="feedback" class="feedback"></div>
       <div id="solution" class="solution"></div>
