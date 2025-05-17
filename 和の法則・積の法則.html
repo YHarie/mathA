@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>和の法則・積の法則/title>
+<title>和の法則・積の法則</title>
   <style>
     html, body {
       margin: 0;
@@ -37,24 +37,26 @@
     }
          body{font-size:1.3em;}
 
-    @media (orientation: portrait) {
-      .container {
-        flex-direction: column;
-      }
+ @media (orientation: portrait) {
+  .container {
+    flex-direction: column;
+  }
 
-      #left-area,#right-area {
-        height: 40vh;
-      }
+  #left-area,#right-area {
+    height: 40vh;
+  }
 
-
-    body {
+  body {
     font-size: 18px;
+  }
+
+  body {
+    font-size: 2em;
   }
 
   input, select, button {
-    font-size: 18px;
+    font-size: 1.5em;
   }
-}
     .correct { color: green; }
     .incorrect { color: red; }
 
@@ -97,6 +99,9 @@ function createDescendingSequence(n, r) {
       let i = parseInt(document.getElementById('modeSelect').value);
    const n = getRandomInt(3, 7);
   const r=getRandomInt(1, n);
+	if(i===0){i= getRandomInt(1, 7);}
+	let solution=`未実装です`;
+
      if (i === 1) {
     const n1 = getRandomInt(1, 3);
     const n2 = getRandomInt(1, 3);
@@ -127,8 +132,30 @@ function createDescendingSequence(n, r) {
     const D = j === 1 ? '往復で同じ鉄道を利用してよい' : '往復で同じ鉄道は使わない';
     answer = j === 1 ? r1 * r1 : r1 * (r1 - 1);
     question = `$$\\mbox{A}~村と\\mbox{B}~町は異なる~${r1}~つの鉄道で結ばれている。$$ $$\\mbox{A}~村と\\mbox{B}~町を${D}とき，往復の仕方は何通りあるか。$$`;
- }
-const solution=`未実装です`;
+ } else if (i === 6) {
+    const r1 = getRandomInt(3, 5);
+       const r2=getRandomInt(2, 4);
+       let R1= r1===3 ?'(a+b+c)':r1===4?'(a+b+c+d)':'(a+b+c+d+e)';
+    let R2= r2===2?'(x+y)':r2===3?'(x+y+z)':'(x+y+z+w)';
+    answer = r1*r2;
+    question = `$$${R1}${R2}~を展開したときの項の数を求めよ。 $$`;
+	solution=`$$かっこの中の項の個数同士をかければよい。${r1}\\times${r2}$$`;
+ } else if (i === 7) {
+  const r1 = getRandomInt(1, 3);
+  const r2 = getRandomInt(1, 3);
+  const r3 = getRandomInt(1, 3); // = ではなく == と書かれていたのが誤り
+  let j = getRandomInt(1, 2);
+  let p = j === 1
+    ? Math.pow(2, r1) * Math.pow(3, r2)
+    : Math.pow(2, r1) * Math.pow(3, r2) * Math.pow(5, r3);
+
+  answer = j === 1 ? (r1 + 1) * (r2 + 1) : (r1 + 1) * (r2 + 1) * (r3 + 1);
+  question = `$$${p}の約数の個数を求めよ。 $$`;
+	solution= j===1 ? `$$${p}=2^{${r1}}\\cdot 3^{${r2}} であるから，(${r1}+1)\\times(${r2}+1)$$`:
+	`$$${p}=2^{${r1}}\\cdot 3^{${r2}} \\cdot 5^{${r2}}であるから，(${r1}+1)\\times(${r2}+1)\\times(${r3}+1)$$`;
+
+}
+
  document.getElementById('question').innerHTML = question;
       document.getElementById('userInput').value = '';
       window.correctAnswer = answer;
@@ -172,21 +199,23 @@ const solution=`未実装です`;
     <div id="left-area">
       <h1>和の法則・積の法則</h1>
       <label>モード:
-        <select id="modeSelect" onchange="generateQuiz()">
+        <select id="modeSelect" onchange="generateQuiz()"style="padding: 1rem 1rem; font-size: 1rem;">
           <option value="1" selected>1</option>
           <option value="2">2</option>
           <option value="3">3</option>
           <option value="4">4</option>
           <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
           <option value="0">0 (ランダム)</option>
         </select>
       </label>
       <div id="question" class="question"></div>
-      <input type="number" id="userInput" placeholder="答えを入力">
+      <input type="number" id="userInput"style="padding: 1em 1em; font-size: 1.2rem;" placeholder="答えを入力">
       <div>
-        <button onclick="checkAnswer()">答え合わせ</button>
-        <button onclick="showSolution()">解説</button>
-        <button onclick="generateQuiz()">再出題</button>
+        <button onclick="checkAnswer()"style="padding: 1em 2em; font-size: 1.2rem;">答え合わせ</button>
+        <button onclick="showSolution()"style="padding: 1em 2em; font-size: 1.2rem;">解説</button>
+        <button onclick="generateQuiz()"style="padding: 1em 2em; font-size: 1.2rem;">再出題</button>
       </div>
       <div id="feedback" class="feedback"></div>
       <div id="solution" class="solution"></div>
@@ -194,7 +223,7 @@ const solution=`未実装です`;
     <div id="right-area">
       <p>ここにメモを書いたり、図形を描いたりできます。</p>
      <canvas id="blackboard" width="700"height="700"></canvas>
-<button onclick="clearBoard()">クリア</button>
+<button onclick="clearBoard()"style="padding: 1em ; font-size: 1rem;">クリア</button>
       
     </div>
   </div>
