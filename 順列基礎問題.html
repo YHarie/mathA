@@ -181,7 +181,68 @@ $$積の法則より，~~${r2}!\\cdot ${r1}!=${answer}~通り$$`; }
 		  
 		  
 	  }
+  }else if (i === 9) {
+	  let r=getRandomInt(3,6);
+	  let j=parseInt(document.getElementById('modeSelect2').value);
+	if(j===0){j=getRandomInt(1,3);}
+	  if(j===1){
+    question = `$$6~個の数字，0，1，2，3，4，5~を使ってできる${r}桁の整数は何個あるか。$$
+$$ただし，同じ数字は2度以上使わないものとする。$$`;
+    answer = 5*productRange( 7-r, 5);
+	solution=`$$一番上の位は0以外の数字1,2,3,4,5のどれかである。$$
+$$その選び方は　5通り$$
+ 	$$残りの位の数字は高い位から順に一の位まで$$
+	$$残り5個の数字から${r-1}個取って並べるから，$$
+  	$$_{5}P_{${r -1}}通り$$
+   	$$よって，積の法則より5\\cdot_{5}P_{${r -1}}=${answer}$$ `;
+	  }else if(j===2 ){
+question = `$$6~個の数字，0，1，2，3，4，5~を使ってできる両端の数字が奇数である${r}桁の整数は何個あるか。$$
+$$ただし，同じ数字は2度以上使わないものとする。$$`;
+		  		   
+    answer  = 6*productRange( 7-r, 4);
+	solution=`$$両端には1，3，5から2個取って並べるから，$$
+$$その並び方は　_{3}P_{2}通り$$
+ 	$$間の${r-2}つの位には4個の数字を並べるから，$$
+	$$その並べ方は　　　_{4}P_{${r -2}}通り$$
+   	$$よって，積の法則より_{3}P_{2}\\cdot_{4}P_{${r -2}}=${answer}$$ `;
+}else if(j===3 ){
+question = `$$6~個の数字，0，1，2，3，4，5~を使ってできる${r}桁の奇数は何個あるか。$$
+$$ただし，同じ数字は2度以上使わないものとする。$$`;
+		  		   
+    answer =  12*productRange( 7-r, 4);
+	solution=`$$一の位は数字~1，3，5のどれかであるから3通り。$$
+$$一番上の位は0と一の位で並べた数字以外の4個の数字のどれかであるから$$
+$$4通り$$
+ 	$$間の${r-2}つの位には4個の数字を並べるから，$$
+	$$その並べ方は　　　_{4}P_{${r -2}}通り$$
+   	$$よって，積の法則より4\\cdot3\\cdot_{4}P_{${r -2}}=${answer}$$ `;
+}else if(j===4 ){
+let answer1 = 5*productRange( 7-r, 5);
+let answer2 =  12*productRange( 7-r, 4);
+
+
+question = `$$6~個の数字，0，1，2，3，4，5~を使ってできる${r}桁の偶数は何個あるか。$$
+$$ただし，同じ数字は2度以上使わないものとする。$$`;
+		  		   
+    answer = 5*productRange( r - 1, 5)- 12*productRange( r - 2, 4);
+	solution=`$$作れる${r}桁の整数の個数から，奇数の個数を引けばよい。$$
+$$${r}桁の整数において，一番上の位は0以外の数字1,2,3,4,5のどれかである。$$
+$$その選び方は　5通り$$
+ 	$$残りの位の数字は高い位から順に一の位まで$$
+	$$残り5個の数字から${r-1}個取って並べるから，$$
+  	$$_{5}P_{${r -1}}通り$$
+$$5\\cdot_{5}P_{${r -1}}=${answer1}$$
+$$また，この中で奇数の個数は$$
+$$一の位は数字~1，3，5のどれかであるから3通り。$$
+$$一番上の位は0と一の位で並べた数字以外の4個の数字のどれかであるから$$
+$$4通り$$
+ 	$$間の${r-2}つの位には4個の数字を並べるから，$$
+	$$その並べ方は　　　_{4}P_{${r -2}}通り$$
+   	$$よって，積の法則より4\\cdot3\\cdot_{4}P_{${r -2}}=${answer2}$$
+$$以上より，${answer1}-${answer2}=${answer}$$ `;
+}
   }
+
 
  document.getElementById('question').innerHTML = question;
       document.getElementById('userInput').value = '';
@@ -238,8 +299,18 @@ $$積の法則より，~~${r2}!\\cdot ${r1}!=${answer}~通り$$`; }
           <option value="6">6</option>
           <option value="7">7</option>
           <option value="8">順列の応用</option>
+          <option value="9">順列の応用2</option>
           <option value="0">0 (ランダム)</option>
         </select>
+応用2のモード
+<select id="modeSelect2" onchange="generateQuiz()"style="padding: 1em 2em; font-size: 1.2rem;">
+          <option value="1" selected>1</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="0">0 (ランダム)</option>
+        </select>
+
       </label>
       <div id="question" class="question"></div>
       <input type="number" id="userInput" placeholder="答えを入力"style="padding: 1em 2em; font-size: 1.2rem;">
