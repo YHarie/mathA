@@ -46,12 +46,13 @@
         height: 40vh;
       }
 
+
     body {
-    font-size: 2em;
+    font-size: 18px;
   }
 
   input, select, button {
-    font-size: 2em;
+    font-size: 18px;
   }
 }
     .correct { color: green; }
@@ -95,7 +96,7 @@ let question = '', answer = 0, solution = '';
       document.getElementById('feedback').textContent = '';
       document.getElementById('solution').textContent = '';
       let i = parseInt(document.getElementById('modeSelect').value);
-	 if (i === 0) i = getRandomInt(1, 4);
+	 if (i === 0) i = getRandomInt(1, 5);
 
    const n = getRandomInt(3, 8);
   const r=getRandomInt(2, 4);
@@ -108,16 +109,36 @@ let question = '', answer = 0, solution = '';
     answer = productRange(1, n - 1);
 solution=`$$(${n}-1)!=${createDescendingSequence(n-1, n-1)}=${answer}$$`;
   } else if (i === 2) {
-    question = `$$　\\mbox{${upperChars}} ~の~ ${n}~人が輪の形に並ぶとき，$$
-$$ \\mbox{A}~と~\\mbox{B}~が隣り合うような並び方は何通りあるか。$$`;
-    answer = productRange(1, n - 2) * 2;
-solution=`$$　隣り合う2人をまとめて1組とする。$$
-$$この1組と残りの${n-2}人の並び方は，${n-1}人の円順列であるから，$$
-$$(${n-1}-1)!=${n-2}!通りある。$$
-$$その各々に対して，~\\mbox{A}~と~\\mbox{B}~の並び方は2通りある。$$
-$$よって，求める並び方は${n-2}!\\cdot2=${answer}$$`;
+  let j = getRandomInt(1, 2);
 
-  } else if (i === 3) {
+  if (j === 1) {
+    question = `$$\\mbox{${upperChars}}~の~${n}~人が輪の形に並ぶとき，$$
+$$\\mbox{A}~と~\\mbox{B}~が隣り合うような並び方は何通りあるか。$$`;
+
+    answer = productRange(1, n - 2) * 2;
+
+    solution = `$$隣り合う2人をまとめて1組とする。$$
+$$この1組と残りの${n - 2}人の並び方は，${n - 1}人の円順列であるから，$$
+$$(${n - 1} - 1)! = ${n - 2}! 通りある。$$
+$$その各々に対して，\\mbox{A}と\\mbox{B}の並び方は2通りある。$$
+$$よって，求める並び方は ${n - 2}! \\cdot 2 = ${answer} $$`;
+  } else if (j === 2) {
+    let n1 = getRandomInt(1, 4) * 2;
+	 const upperChars2 = Array.from({length: n1}, (_, i) => String.fromCharCode(65 + i)).join(',');
+
+
+
+    question = `$$\\mbox{${upperChars2}}~の~${n1}~人が輪の形に並ぶとき，$$
+$$\\mbox{A}~と~\\mbox{B}~が向かい合うような並び方は何通りあるか。$$`;
+
+    answer = productRange(1, n1 - 2);
+
+    solution = `$$\\mbox{A}の位置を固定したとき，\\mbox{B}は\\mbox{A}の真向かいの位置に固定される。$$
+$$よって，求める並び方は ${n1 - 2} 人の順列の総数に等しいから，$$
+$$${n1 - 2}! = ${answer} $$`;
+  }
+}
+ else if (i === 3) {
     question = `$$ ${n} 個の文字~ ${lowerChars} ~から，重複を許して ~${r}~ 個取り出して ~1~列に並べるとき，文字列は何通りできるか。$$`;
     answer = Math.pow(n, r);
 solution=`$$ ${n} 個から${r}個とる重複順列の総数だから，${n}^${r}=${answer}$$`;
@@ -126,7 +147,25 @@ solution=`$$ ${n} 個から${r}個とる重複順列の総数だから，${n}^${
     question = `$$ ${r}個の数字 ${numbers}~を重複を許して使ってできる ~${n}~ 桁の整数は何個あるか。$$`;
     answer = Math.pow(r, n);
 solution=`$$ ${n} 個から${r}個とる重複順列の総数だから，${n}^${r}=${answer}$$`;
+
+  }else if (i === 5) {let j=getRandomInt(1,2);
+	if(j===1){
+    question = `$$ ${n}人を，2つの部屋 ~\\mbox{A}，\\mbox{B}に入れる方法は何通りあるか。$$
+$$ただし，1人も入らない部屋があってよいものとする$$`;
+    answer = Math.pow(2, n);
+solution=`$$ ${n} 人それぞれについて，A,Bの2通りが考えられるから$$
+$$2^${n}=${answer}$$
+`;}else {
+    question = `$$ ${n}人を，2つの部屋 ~\\mbox{A}，\\mbox{B}に入れる方法は何通りあるか。$$
+$$ただし，少なくとも1人は部屋に入るものとする。$$`;
+    answer = Math.pow(2, n)-2;
+solution=`$$ ${n} 人それぞれについて，A,Bの2通りが考えられるから$$
+$$2^${n}通り$$
+$$このとき，全員がAに入る，全員がBに入る2通りがこの中に含まれるので$$
+$$2^${n}-2=${answer}$$
+`;}
   }
+
 
  document.getElementById('question').innerHTML = question;
       document.getElementById('userInput').value = '';
@@ -171,80 +210,97 @@ solution=`$$ ${n} 個から${r}個とる重複順列の総数だから，${n}^${
     <div id="left-area">
       <h1>円順列・重複順列</h1>
       <label>モード:
-        <select id="modeSelect" onchange="generateQuiz()">
+        <select id="modeSelect" onchange="generateQuiz()"style="padding: 1em 1em; font-size: 0.8rem;">
           <option value="1" selected>1</option>
           <option value="2">2</option>
           <option value="3">3</option>
           <option value="4">4</option>
+          <option value="5">5</option>
            <option value="0">ランダム</option>
         </select>
       </label>
       <div id="question" class="question"></div>
-      <input type="number" id="userInput" placeholder="答えを入力">
+      <input type="number" id="userInput"style="padding: 1em 1em; font-size: 0.8rem;" placeholder="答えを入力">
       <div>
-        <button onclick="checkAnswer()">答え合わせ</button>
-        <button onclick="showSolution()">解説</button>
-        <button onclick="generateQuiz()">再出題</button>
+        <button onclick="checkAnswer()"style="padding: 1em 1em; font-size: 0.8rem;">答え合わせ</button>
+        <button onclick="showSolution()"style="padding: 1em 1em; font-size: 0.8rem;">解説</button>
+        <button onclick="generateQuiz()"style="padding: 1em 1em; font-size: 0.8rem;">再出題</button>
       </div>
       <div id="feedback" class="feedback"></div>
       <div id="solution" class="solution"></div>
     </div>
+
     <div id="right-area">
       <p>ここにメモを書いたり、図形を描いたりできます。</p>
-      <canvas id="blackboard"></canvas>
+      <canvas id="blackboard" width="700"height="700"></canvas>
 <button onclick="clearBoard()">クリア</button>
+<button onclick="toggleEraser()">消しゴム切替</button>
       
     </div>
   </div>
 
-  <script>
-    const canvas = document.getElementById('blackboard');
-    const ctx = canvas.getContext('2d');
-    let drawing = false;
+<script>
+  const canvas = document.getElementById('blackboard');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let isErasing = false; // 消しゴムモードのフラグ
 
-    canvas.addEventListener('mousedown', e => {
-      drawing = true;
-      ctx.beginPath();
-      ctx.moveTo(e.offsetX, e.offsetY);
-    });
+  function toggleEraser() {
+    isErasing = !isErasing;
+    // メッセージ表示はなし
+  }
 
-    canvas.addEventListener('mousemove', e => {
-      if (drawing) {
-        ctx.lineTo(e.offsetX, e.offsetY);
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-    });
+  function getStrokeStyle() {
+    return isErasing ? "#222" : "white"; // 黒板色 or 白
+  }
 
-    canvas.addEventListener('mouseup', () => drawing = false);
-    canvas.addEventListener('mouseleave', () => drawing = false);
+  function getLineWidth() {
+    return isErasing ? 12 : 2; // 消しゴムは太め
+  }
 
-    canvas.addEventListener('touchstart', e => {
-      e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      ctx.beginPath();
-      ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-      drawing = true;
-    });
+  function drawLine(x, y) {
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = getStrokeStyle();
+    ctx.lineWidth = getLineWidth();
+    ctx.stroke();
+  }
 
-    canvas.addEventListener('touchmove', e => {
-      e.preventDefault();
-      if (!drawing) return;
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-      ctx.strokeStyle = "white";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    });
+  canvas.addEventListener('mousedown', e => {
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+  });
 
-    canvas.addEventListener('touchend', () => drawing = false);
+  canvas.addEventListener('mousemove', e => {
+    if (drawing) drawLine(e.offsetX, e.offsetY);
+  });
 
-    function clearBoard() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-  </script>
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('mouseleave', () => drawing = false);
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    ctx.beginPath();
+    ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    drawing = true;
+  });
+
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    drawLine(touch.clientX - rect.left, touch.clientY - rect.top);
+  });
+
+  canvas.addEventListener('touchend', () => drawing = false);
+
+  function clearBoard() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+</script>
+
 </body>
 </html>
