@@ -91,13 +91,72 @@ function createDescendingSequence(n, r) {
   }
   return result.join('・');  // 例: "6・5・4"
 }
+
+function drawGridAndPoints(v, h, p, q) {
+  const canvas = document.getElementById("gridCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const width = canvas.width;
+  const height = canvas.height;
+
+  const cellWidth = width / (h - 1);
+  const cellHeight = height / (v - 1);
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.font = "25px Arial";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.strokeStyle = "#aaa";
+
+  // グリッド描画
+  for (let i = 0; i < h; i++) {
+    const x = i * cellWidth;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
+    ctx.stroke();
+  }
+  for (let j = 0; j < v; j++) {
+    const y = j * cellHeight;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
+
+  // 点とラベル描画（位置調整あり）
+  function drawPoint(gridX, gridY) {
+    const cx = gridX * cellWidth;
+    const cy = height - gridY * cellHeight;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = "black";
+    ctx.fill();
+    return { cx, cy };
+  }
+
+  // 点A
+  const a = drawPoint(0, 0);
+  ctx.fillText("A", a.cx + 20, a.cy -20); // 右へ文字1個分
+
+  // 点B
+  const b = drawPoint(h - 1, v - 1);
+  ctx.fillText("B", b.cx - 22, b.cy + 24); // 左4個、下3個分
+
+  // 点C
+  const c = drawPoint(q, p);
+  ctx.fillText("C", c.cx + 8, c.cy - 16); // 少し右上
+}
+
+
+
     function generateQuiz() { 
       document.getElementById('feedback').textContent = '';
       document.getElementById('solution').textContent = '';
       let i = parseInt(document.getElementById('modeSelect').value);
    const n = getRandomInt(3, 10);
   const r=getRandomInt(0, n);
- if (i === 0) i = getRandomInt(1, 3);
+ if (i === 0) i = getRandomInt(2, 8);
 
       if (i === 1) {
     question = `$$_{${n}}\\mbox{C}_{${r}}~の値を求めよ。$$`;
@@ -158,6 +217,28 @@ solution=`$$${n-r+2}~本の平行線から2本選び， ~${r+2}~ 本の平行線
 $$平行四辺形が1個できる。$$
 $$よって，_{${n-r+2}}\\mbox{C}_{2}\\cdot _{${r+1}}\\mbox{C}_{2}=${answer}$$`;
 
+  }else if (i === 8) { 
+
+
+
+let v=getRandomInt(4,6);
+let h=getRandomInt(4,6); 
+let p=getRandomInt(2,v-2);
+let q=getRandomInt(2,h-2);
+ 
+drawGridAndPoints(v, h, p, q)
+ 
+    question =` $$図のように，東西に${h}本，南北に${v}本の道がある。$$
+$$\\mbox{A}から\\mbox{B}まで\\mbox{C}を通って最短距離で行く道順は何通りあるか
+$$`;
+    answer = (productRange(q+1,p+q)/factorial(p))*(productRange(v-p,v+h-p-q-2)/factorial(h-q-1));
+solution=`$$ 北に1区画進むことを↑，東に1区画進むことを→と表すと， $$
+$$AからCまで最短距離で行く道順の総数は，$$
+$$${p}個の↑と${q}個の→を1列に並べる総数に等しいから，$$
+$$_{${p+q}}C_{${p}}通り$$
+$$同様に，点CからBまで最短距離で行く道順の総数は，_{${v+h-p-q-2}}C_{${v-p-1}}通り$$
+$$よって，_{${p+q}}C_{${p}}\\cdot_{${v+h-p-q-2}}C_{${v-p-1}}=${answer}$$`;
+document.getElementById("gridCanvas").style.display = "block";
   }
  document.getElementById('question').innerHTML = question;
       document.getElementById('userInput').value = '';
@@ -202,7 +283,7 @@ $$よって，_{${n-r+2}}\\mbox{C}_{2}\\cdot _{${r+1}}\\mbox{C}_{2}=${answer}$$`
     <div id="left-area">
       <h1>組み合わせの基礎</h1>
       <label>モード:
-        <select id="modeSelect" onchange="generateQuiz()">
+        <select id="modeSelect" style="padding: 1em 1em; font-size: 0.8rem;"onchange="generateQuiz()">
           <option value="1" selected>1</option>
           <option value="2">2</option>
           <option value="3">3</option>
@@ -210,75 +291,94 @@ $$よって，_{${n-r+2}}\\mbox{C}_{2}\\cdot _{${r+1}}\\mbox{C}_{2}=${answer}$$`
           <option value="5">5</option>
 	     <option value="6">6</option>
      <option value="7">7</option>
+     <option value="8">8</option>
           <option value="0">ランダム</option>
         </select>
       </label>
       <div id="question" class="question"></div>
-      <input type="number" id="userInput" placeholder="答えを入力">
+<canvas id="gridCanvas" width="300" height="200" style="border:1px solid #000; display: none;"></canvas>
+
+      <input type="number" id="userInput"style="padding: 1em 1em; font-size: 0.8rem;" placeholder="答えを入力">
       <div>
-        <button onclick="checkAnswer()">答え合わせ</button>
-        <button onclick="showSolution()">解説</button>
-        <button onclick="generateQuiz()">再出題</button>
+        <button onclick="checkAnswer()"style="padding: 1em 1em; font-size: 0.8rem;">答え合わせ</button>
+        <button onclick="showSolution()"style="padding: 1em 1em; font-size: 0.8rem;">解説</button>
+        <button onclick="generateQuiz()"style="padding: 1em 1em; font-size: 0.8rem;">再出題</button>
       </div>
       <div id="feedback" class="feedback"></div>
       <div id="solution" class="solution"></div>
     </div>
-    <div id="right-area">
+  
+  <div id="right-area">
       <p>ここにメモを書いたり、図形を描いたりできます。</p>
-      <canvas id="blackboard"></canvas>
-<button onclick="clearBoard()">クリア</button>
+      <canvas id="blackboard" width="700"height="700"></canvas>
+<button onclick="clearBoard()"style="padding: 1em 1em; font-size: 0.8rem;">クリア</button>
+<button onclick="toggleEraser()"style="padding: 1em 1em; font-size: 0.8rem;">消しゴム切替</button>
       
     </div>
   </div>
 
-  <script>
-    const canvas = document.getElementById('blackboard');
-    const ctx = canvas.getContext('2d');
-    let drawing = false;
+<script>
+  const canvas = document.getElementById('blackboard');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let isErasing = false; // 消しゴムモードのフラグ
 
-    canvas.addEventListener('mousedown', e => {
-      drawing = true;
-      ctx.beginPath();
-      ctx.moveTo(e.offsetX, e.offsetY);
-    });
+  function toggleEraser() {
+    isErasing = !isErasing;
+    // メッセージ表示はなし
+  }
 
-    canvas.addEventListener('mousemove', e => {
-      if (drawing) {
-        ctx.lineTo(e.offsetX, e.offsetY);
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 2;
-        ctx.stroke();
-      }
-    });
+  function getStrokeStyle() {
+    return isErasing ? "#222" : "white"; // 黒板色 or 白
+  }
 
-    canvas.addEventListener('mouseup', () => drawing = false);
-    canvas.addEventListener('mouseleave', () => drawing = false);
+  function getLineWidth() {
+    return isErasing ? 12 : 2; // 消しゴムは太め
+  }
 
-    canvas.addEventListener('touchstart', e => {
-      e.preventDefault();
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      ctx.beginPath();
-      ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
-      drawing = true;
-    });
+  function drawLine(x, y) {
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = getStrokeStyle();
+    ctx.lineWidth = getLineWidth();
+    ctx.stroke();
+  }
 
-    canvas.addEventListener('touchmove', e => {
-      e.preventDefault();
-      if (!drawing) return;
-      const rect = canvas.getBoundingClientRect();
-      const touch = e.touches[0];
-      ctx.lineTo(touch.clientX - rect.left, touch.clientY - rect.top);
-      ctx.strokeStyle = "white";
-      ctx.lineWidth = 2;
-      ctx.stroke();
-    });
+  canvas.addEventListener('mousedown', e => {
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+  });
 
-    canvas.addEventListener('touchend', () => drawing = false);
+  canvas.addEventListener('mousemove', e => {
+    if (drawing) drawLine(e.offsetX, e.offsetY);
+  });
 
-    function clearBoard() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-    }
-  </script>
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('mouseleave', () => drawing = false);
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    ctx.beginPath();
+    ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    drawing = true;
+  });
+
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    drawLine(touch.clientX - rect.left, touch.clientY - rect.top);
+  });
+
+  canvas.addEventListener('touchend', () => drawing = false);
+
+  function clearBoard() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+</script>
+
 </body>
 </html>
