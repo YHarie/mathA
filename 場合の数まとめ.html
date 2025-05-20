@@ -4,31 +4,67 @@
   <meta charset="UTF-8">
   <title>場合の数　まとめ</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; text-align: left; }
-    .question, #feedback { margin-bottom: 10px; font-size: 18px; text-align: left; }
-    button { padding: 10px 20px; font-size: 16px; margin-right: 20px; }
-    input[type="number"] { font-size: 16px; margin-left: 10px; width: 80px; }
-  </style>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-</head>
-<body>
-<h1>場合の数　まとめ</h1>
-<div class="question" id="question"></div>
-<div>
-  <label for="answer">答え：<input type="number" id="answer"> 通り</label>
-</div>
-<div style="margin-top: 20px;">
-  <button type="button" onclick="checkAnswer()">答え合わせ</button>
-  <button type="button" onclick="generateQuestion()">再出題</button>
-</div>
-<div id="feedback" style="margin-top: 20px;"></div>
-<script>
-MathJax = { chtml: { displayAlign: "left", }
-};
-</script>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
 
-<script>
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+    }
+
+    #left-area, #right-area {
+      padding: 1em;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+
+    #left-area {
+      flex: 1;
+      background-color: #f9f9f9;
+      font-size: 1em;
+
+    }
+
+    #right-area {
+      flex: 1;
+      background-color: #222;
+      color: white;
+    }
+         body{font-size:1.3em;}
+
+    @media (orientation: portrait) {
+      .container {
+        flex-direction: column;
+      }
+
+      #left-area,#right-area {
+        height: 40vh;
+      }
+j
+
+    body {
+    font-size: 2em;
+  }
+
+  input, select, button {
+    font-size: 2em;
+  }
+}
+    .correct { color: green; }
+    .incorrect { color: red; }
+
+    #blackboard {
+      width: 100%;
+      height: auto;
+      touch-action: none;
+    }
+  </style>
+  <script>
 function getRandomInt(min, max, exclude = []) {
   let val;
   do {
@@ -48,84 +84,91 @@ function productRange(from, to) {
   for (let i = from; i <= to; i++) result *= i;
   return result;
 }
-
-function generateQuestion() {
-  const i = getRandomInt(1,23 ); // i=1〜7までは既存、8〜23を新規に対応
-  const n = getRandomInt(3, 7);
-  const r = getRandomInt(2, 3);
-  let questionText = '', correctAnswer = 0;
-
-  if (i === 1) {
-    questionText = `$$_{${n}}\\mbox{P}_{${r}}~の値を求めよ。$$`;
-    correctAnswer = productRange(n - r + 1, n);
-
-  } else if (i === 2) {
-    questionText = `$$~${n}!~ の値を求めよ。$$`;
-    correctAnswer = factorial(n);
-
-  } else if (i === 3) {
-    questionText = `$$${n}~ 人から ~${r}~ 人選んで~1~列に並べるときの並べ方を求めよ。$$`;
-    correctAnswer = productRange(n - r + 1, n);
-
-  } else if (i === 4) {
-    questionText = `$$1から ~${n}~ までの ~${n}~ 個の数字をすべて~1~列に並べるときの並べ方を求めよ。$$`;
-    correctAnswer = factorial(n);
-
-  } else if (i === 5) {
-    let C = '';
-    const wordList = {
-      3: ['act', 'bit', 'day', 'max'],
-      4: ['math', 'blue', 'easy', 'fair'],
-      5: ['cameo', 'forte', 'pricy', 'scrum'],
-      6: ['anchor', 'falcon', 'genius', 'invoke'],
-      7: ['alchemy', 'caliber', 'crimson', 'crusade']
-    };
-    C = wordList[n][getRandomInt(0, wordList[n].length - 1)];
-    questionText = `$$\\mbox{${C}}~ という単語の ~${n}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
-    correctAnswer = factorial(n);
-
-  } else if (i === 6) {
-    questionText = `$$${n}~ 人を全員~1~列に並べるときの並べ方を求めよ。$$`;
-    correctAnswer = factorial(n);
-
-  } else if (i === 7) {
-    questionText = `$$1~から ${n}~ までの ~${n}~ 個の数字から，~${r}~ 個選んで1列に並べるときの並べ方を求めよ。$$`;
-    correctAnswer = productRange(n - r + 1, n);
-
-  } else if (i === 8) {
-    questionText = `$$${n} 人が円卓を囲んで座るとき，並び方は何通りあるか。$$`;
-    correctAnswer = factorial(n - 1);
-
-  } else if (i === 9) {
-    const A = String.fromCharCode(65 + getRandomInt(0, n - 1));
-    let B;
-    do {
-      B = String.fromCharCode(65 + getRandomInt(0, n - 1));
-    } while (B === A);
-    let C = [];
-    for (let j = 0; j < n; j++) {
-      C.push(String.fromCharCode(65 + j));
-    }
-    questionText = `$$\\mbox{${C.join(', ')}}~ の ~${n}~ 人が輪の形に並ぶとき，~\\mbox{${A}}と\\mbox{${B}}~が隣り合うような並び方は何通りあるか。$$`;
-    correctAnswer = 2 * factorial(n - 2);
-
-  } else if (i === 10) {
-    let c = [];
-    for (let j = 0; j < n; j++) {
-      c.push(String.fromCharCode(97 + j));
-    }
-    questionText = `$$${n} 個の文字 ${c.join(', ')} から，重複を許して ${r} 個取り出して 1列に並べるとき，文字列は何通りできるか。$$`;
-    correctAnswer = Math.pow(n, r);
-
-  } else if (i === 11) {
-    let N = [];
-    for (let j = 1; j <= r; j++) {
-      N.push(j);
-    }
-    questionText = `$$${r}~ 個の数字~ ${N.join(', ')}~ を重複を許して使ってできる ~${n}~ 桁の整数は何個あるか。$$`;
-    correctAnswer = Math.pow(r, n);
+function createDescendingSequence(n, r) {
+  let result = [];
+  for (let i = 0; i < r; i++) {
+    result.push(n - i);
   }
-else if (i === 12) {
+  return result.join('・');  // 例: "6・5・4"
+}
+
+function drawGridAndPoints(v, h, p, q) {
+  const canvas = document.getElementById("gridCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const width = canvas.width;
+  const height = canvas.height;
+
+  const cellWidth = width / (h - 1);
+  const cellHeight = height / (v - 1);
+
+  ctx.clearRect(0, 0, width, height);
+  ctx.font = "25px Arial";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "middle";
+  ctx.strokeStyle = "#aaa";
+
+  // グリッド描画
+  for (let i = 0; i < h; i++) {
+    const x = i * cellWidth;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x, height);
+    ctx.stroke();
+  }
+  for (let j = 0; j < v; j++) {
+    const y = j * cellHeight;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(width, y);
+    ctx.stroke();
+  }
+
+  // 点とラベル描画（位置調整あり）
+  function drawPoint(gridX, gridY) {
+    const cx = gridX * cellWidth;
+    const cy = height - gridY * cellHeight;
+    ctx.beginPath();
+    ctx.arc(cx, cy, 5, 0, 2 * Math.PI);
+    ctx.fillStyle = "black";
+    ctx.fill();
+    return { cx, cy };
+  }
+
+  // 点A
+  const a = drawPoint(0, 0);
+  ctx.fillText("A", a.cx + 20, a.cy -20); // 右へ文字1個分
+
+  // 点B
+  const b = drawPoint(h - 1, v - 1);
+  ctx.fillText("B", b.cx - 22, b.cy + 24); // 左4個、下3個分
+
+  // 点C
+  const c = drawPoint(q, p);
+  ctx.fillText("C", c.cx + 8, c.cy - 16); // 少し右上
+}
+
+function createDescendingSequence(n, r) {
+  let result = [];
+  for (let i = 0; i < r; i++) {
+    result.push(n - i);
+  }
+  return result.join('・');  // 例: "6・5・4"
+}
+
+
+    function generateQuiz() { 
+      document.getElementById('feedback').textContent = '';
+      document.getElementById('solution').textContent = '';
+
+	let M=parseInt(document.getElementById('modeSelect').value);
+	if (M===0){M=getRandomInt(1,4);}
+  if(M===1){const n = getRandomInt(3, 7);
+  const r=getRandomInt(1, n);
+	let i= getRandomInt(1, 7);
+	let solution=`未実装です`;
+
+     if (i === 1) {
     const n1 = getRandomInt(1, 3);
     const n2 = getRandomInt(1, 3);
     const n3 = getRandomInt(1, 3);
@@ -134,53 +177,311 @@ else if (i === 12) {
     const C = 'c，'.repeat(n3 - 1) + 'c';
     const k = [n1, n2, n3].filter(x => x > 1).length;
     const l = [n1, n2, n3].filter(x => x > 2).length;
-    correctAnswer = 6 + 6 * k + l;
-    questionText = `$$${n1 + n2 + n3}~個の文字~ ${A}${B}${C} ~から，~3~個選んで~1~列に並べるとき，全部で何通りあるか。$$`;
-  } else if (i === 13) {
+    answer = 6 + 6 * k + l;
+    question = `$$★~${n1 + n2 + n3}~個の文字~ ${A}${B}${C} ~から，$$ $$~3~個選んで~1~列に並べるとき，全部で何通りあるか。$$`;
+  } else if (i === 2) {
     const n = getRandomInt(2, 12);
-    correctAnswer = n < 8 ? n - 1 : 13 - n;
-    questionText = `$$大小~2~個のさいころを投げるとき，目の和が~${n}~になる場合は何通りあるか。$$`;
-  } else if (i === 14) {
+    answer = n < 8 ? n - 1 : 13 - n;
+    question = `$$★~大小~2~個のさいころを投げるとき，$$ $$目の和が~${n}~になる場合は何通りあるか。$$`;
+  } else if (i === 3) {
     const n = getRandomInt(3, 8);
-    correctAnswer = (n-2) * (n - 1) / 2;
-    questionText = `$$大中小~3~個のさいころを投げるとき，目の和が~${n}~になる場合は何通りあるか。$$`;
-  } else if (i === 15) {
+    answer = (n-2) * (n - 1) / 2;
+    question = `$$★~大中小~3~個のさいころを投げるとき，$$ $$目の和が~${n}~になる場合は何通りあるか。$$`;
+  } else if (i === 4) {
     const n = getRandomInt(2, 7);
     const m = getRandomInt(2, 7, [n]);
-    correctAnswer = n + m - 2;
-    questionText = `$$大小~2~個のさいころを投げるとき，目の和が~${n}~または~${m}~になる場合は何通りあるか。$$`;
-  } else if (i === 16) {
+    answer = n + m - 2;
+    question = `$$★~大小~2~個のさいころを投げるとき，$$ $$目の和が~${n}~または~${m}~になる場合は何通りあるか。$$`;
+  } else if (i === 5) {
     const r1 = getRandomInt(3, 6);
     const j = getRandomInt(1, 2);
     const D = j === 1 ? '往復で同じ鉄道を利用してよい' : '往復で同じ鉄道は使わない';
-    correctAnswer = j === 1 ? r1 * r1 : r1 * (r1 - 1);
-    questionText = `$$\\mbox{A}~村と\\mbox{B}~町は異なる~${r1}~つの鉄道で結ばれている。\\mbox{A}~村と\\mbox{B}~町を${D}とき，往復の仕方は何通りあるか。$$`;
+    answer = j === 1 ? r1 * r1 : r1 * (r1 - 1);
+    question = `$$★★~\\mbox{A}~村と\\mbox{B}~町は異なる~${r1}~つの鉄道で結ばれている。$$ $$\\mbox{A}~村と\\mbox{B}~町を${D}とき，往復の仕方は何通りあるか。$$`;
+ } else if (i === 6) {
+    const r1 = getRandomInt(3, 5);
+       const r2=getRandomInt(2, 4);
+       let R1= r1===3 ?'(a+b+c)':r1===4?'(a+b+c+d)':'(a+b+c+d+e)';
+    let R2= r2===2?'(x+y)':r2===3?'(x+y+z)':'(x+y+z+w)';
+    answer = r1*r2;
+    question = `$$★★${R1}${R2}~を展開したときの項の数を求めよ。 $$`;
+	solution=`$$かっこの中の項の個数同士をかければよい。${r1}\\times${r2}$$`;
+ } else if (i === 7) {
+  const r1 = getRandomInt(1, 3);
+  const r2 = getRandomInt(1, 3);
+  const r3 = getRandomInt(1, 3); // = ではなく == と書かれていたのが誤り
+  let j = getRandomInt(1, 2);
+  let p = j === 1
+    ? Math.pow(2, r1) * Math.pow(3, r2)
+    : Math.pow(2, r1) * Math.pow(3, r2) * Math.pow(5, r3);
+
+  answer = j === 1 ? (r1 + 1) * (r2 + 1) : (r1 + 1) * (r2 + 1) * (r3 + 1);
+  question = `$$★★~${p}の約数の個数を求めよ。 $$`;
+	solution= j===1 ? `$$${p}=2^{${r1}}\\cdot 3^{${r2}} であるから，(${r1}+1)\\times(${r2}+1)$$`:
+	`$$${p}=2^{${r1}}\\cdot 3^{${r2}} \\cdot 5^{${r3}}であるから，(${r1}+1)\\times(${r2}+1)\\times(${r3}+1)$$`;
+
+}
+
+}else if(M===2){const n = getRandomInt(3, 7);
+  const r=getRandomInt(1, n);
+      let i = getRandomInt(1, 9);
+
+  if (i === 1) {
+    question = `$$★~_{${n}}P_{${r}}~の値を求めよ。$$`;
+    answer = productRange(n - r + 1, n);
+    solution=`$$_{${n}}P_{${r}}=${createDescendingSequence(n, r)}=${answer}$$`;
+  } else if (i === 2) {
+    question = `$$★~${n}! ~の値を求めよ。$$`;
+    answer = factorial(n);
+	solution=`$$${n}!=${createDescendingSequence(n, n)}=${answer}$$`;
+
+
+  } else if (i === 3) {
+    question = `$$★~${n}~ 人から~ ${r}~人選んで1列に並べるときの並べ方を求めよ。$$`;
+    answer = productRange(n - r + 1, n);
+	solution=`$$_{${n}}P_{${r}}=${createDescendingSequence(n, r)}=${answer}$$`;
+  } else if (i === 4) {
+    question = `$$★~~1~から ~${n}~ までの ~${n}~ 個の数字をすべて~1~列に並べるときの並べ方を求めよ。$$`;
+    answer = factorial(n);
+	solution=`$$${n}!=${createDescendingSequence(n, n)}=${answer}$$`;
+  } else if (i === 5) {
+    let C = '';
+    const wordList = {
+      3: ['act', 'bit', 'day', 'max','cat'],
+      4: ['math', 'blue', 'easy', 'fair','king','star'],
+      5: ['cameo', 'forte', 'pricy', 'scrum','world','tower','cream'],
+      6: ['anchor', 'falcon', 'genius', 'invoke','silver','hermit'],
+      7: ['alchemy', 'caliber', 'crimson', 'crusade','chariot']
+    };
+    C = wordList[n][getRandomInt(0, wordList[n].length - 1)];
+    question = `$$★★ \\mbox{${C}} という単語の ~${n}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
+    answer = factorial(n);
+	solution=`$$${n}!=${createDescendingSequence(n, n)}=${answer}$$`;
+  } else if (i === 6) {
+    question = `$$★★~${n}~ 人を全員~1~列に並べるときの並べ方を求めよ。$$`;
+    answer = factorial(n);
+	solution=`$$${n}!=${createDescendingSequence(n, n)}=${answer}$$`;
+  } else if (i === 7) {
+    question = `$$★~~1~から ~${n}~ までの ~${n}~ 個の数字から，~${r}~ 個選んで~1~列に並べるときの並べ方を求めよ。$$`;
+    answer = productRange(n - r + 1, n);
+	solution=`$$_{${n}}P_{${r}}=${createDescendingSequence(n, r)}=${answer}$$`;
+  }else if (i === 8) {
+	  let r1=getRandomInt(2,4);
+	  let r2=getRandomInt(r1-1,r1+1);
+	  let j=getRandomInt(1,3);
+	  if(j===1){
+    question = `$$★★★~大人${r2}~人 ，子ども~${r1}~人が~1~列に並ぶとき，子ども${r1}~人が続けて並ぶ並び方を求めよ。$$`;
+    answer = factorial(r2 +1)*factorial(r1);
+	solution=`$$子ども${r1}~人を１組として考えると$$
+ 	$$大人${r2}~人と1組を並べる順列であるから，${r2 +1}! 通り。$$
+  	$$さらに，子どもの並び方は${r1}!~通りである。$$
+   	$$よって，積の法則より${r2 +1}!\\cdot${r1}!=${answer}$$ `;
+	  }else if(j===2 ){
+question = `$$★★★~大人${r2}~人 ，子ども~${r1}~人が~1~列に並ぶとき，大人と子どもが交互に並ぶ並び方を求めよ。$$`;
+		  if(r1===r2){
+		   
+    answer = factorial(r1)*factorial(r1)*2;
+	solution=`$$並び方は次の[1]，[2]が考えられる。$$
+$$[1]大人，子ども，大人，\\cdots ~と並ぶとき$$
+$$大人の並びかたが${r1}!~通り，子どもの並びかたが${r1}!~通りであるから$$
+$$積の法則より，~~${r1}!\\cdot ${r1}!=${answer/2}~通り$$
+$$[2]子ども，大人，子ども，\\cdots ~と並ぶとき$$
+$$[1]のときと同様に${answer/2}通りある。$$
+$$よって，和の法則より$$
+$$${answer/2}+${answer/2}=${answer}$$`;
+}else if(r1>r2){answer = factorial(r2)*factorial(r1);
+	solution=`$$子ども，大人と交互に並ぶとき，$$
+$$大人の並びかたが${r2}!~通り，子どもの並びかたが${r1}!~通りであるから$$
+$$積の法則より，~~${r2}!\\cdot ${r1}!=${answer}~通り$$`;
+	       }else{answer = factorial(r2)*factorial(r1);
+	solution=`$$子ども，大人と交互に並ぶとき，$$
+$$大人の並びかたが${r2}!~通り，子どもの並びかたが${r1}!~通りであるから$$
+$$積の法則より，~~${r2}!\\cdot ${r1}!=${answer}~通り$$`; }
+	  }else{
+		  question = `$$★★★~大人${r1}~人 ，子ども~${r2}~人が~1~列に並ぶとき，大人が両端に並ぶ並び方を求めよ。$$`;
+		  answer = productRange(2, r1)*factorial(r1+r2 -2);
+		  solution=`$$はじめに大人${r1}~人を左端，右端に並べる方法は$$
+    	$$_{${r1}}P_{2}~通りある。$$
+ 	$$残りの大人${r1 -2}~人と子ども${r2}人の並び方は，${r2 + r1 -2}! 通り。$$
+   	$$よって，積の法則より_{${r1}}P_{2}\\cdot${r2 + r1 -2}!=${answer}$$ `;
+		  
+		  
+	  }
+  }else if (i === 9) {
+	  let r=getRandomInt(3,6);
+	  let j=getRandomInt(1,3);
+	  if(j===1){
+    question = `$$★★★~6~個の数字，0，1，2，3，4，5~を使ってできる${r}桁の整数は何個あるか。$$
+$$ただし，同じ数字は2度以上使わないものとする。$$`;
+    answer = 5*productRange( 7-r, 5);
+	solution=`$$一番上の位は0以外の数字1,2,3,4,5のどれかである。$$
+$$その選び方は　5通り$$
+ 	$$残りの位の数字は高い位から順に一の位まで$$
+	$$残り5個の数字から${r-1}個取って並べるから，$$
+  	$$_{5}P_{${r -1}}通り$$
+   	$$よって，積の法則より5\\cdot_{5}P_{${r -1}}=${answer}$$ `;
+	  }else if(j===2 ){
+question = `$$★★★★~6~個の数字，0，1，2，3，4，5~を使ってできる両端の数字が奇数である${r}桁の整数は何個あるか。$$
+$$ただし，同じ数字は2度以上使わないものとする。$$`;
+		  		   
+    answer  = 6*productRange( 7-r, 4);
+	solution=`$$両端には1，3，5から2個取って並べるから，$$
+$$その並び方は　_{3}P_{2}通り$$
+ 	$$間の${r-2}つの位には4個の数字を並べるから，$$
+	$$その並べ方は　　　_{4}P_{${r -2}}通り$$
+   	$$よって，積の法則より_{3}P_{2}\\cdot_{4}P_{${r -2}}=${answer}$$ `;
+}else if(j===3 ){
+question = `$$★★★★~6~個の数字，0，1，2，3，4，5~を使ってできる${r}桁の奇数は何個あるか。$$
+$$ただし，同じ数字は2度以上使わないものとする。$$`;
+		  		   
+    answer =  12*productRange( 7-r, 4);
+	solution=`$$一の位は数字~1，3，5のどれかであるから3通り。$$
+$$一番上の位は0と一の位で並べた数字以外の4個の数字のどれかであるから$$
+$$4通り$$
+ 	$$間の${r-2}つの位には4個の数字を並べるから，$$
+	$$その並べ方は　　　_{4}P_{${r -2}}通り$$
+   	$$よって，積の法則より4\\cdot3\\cdot_{4}P_{${r -2}}=${answer}$$ `;
+}else if(j===4 ){
+let answer1 = 5*productRange( 7-r, 5);
+let answer2 =  12*productRange( 7-r, 4);
+
+
+question = `$$★★★★~6~個の数字，0，1，2，3，4，5~を使ってできる${r}桁の偶数は何個あるか。$$
+$$ただし，同じ数字は2度以上使わないものとする。$$`;
+		  		   
+    answer = 5*productRange( r - 1, 5)- 12*productRange( r - 2, 4);
+	solution=`$$作れる${r}桁の整数の個数から，奇数の個数を引けばよい。$$
+$$${r}桁の整数において，一番上の位は0以外の数字1,2,3,4,5のどれかである。$$
+$$その選び方は　5通り$$
+ 	$$残りの位の数字は高い位から順に一の位まで$$
+	$$残り5個の数字から${r-1}個取って並べるから，$$
+  	$$_{5}P_{${r -1}}通り$$
+$$5\\cdot_{5}P_{${r -1}}=${answer1}$$
+$$また，この中で奇数の個数は$$
+$$一の位は数字~1，3，5のどれかであるから3通り。$$
+$$一番上の位は0と一の位で並べた数字以外の4個の数字のどれかであるから$$
+$$4通り$$
+ 	$$間の${r-2}つの位には4個の数字を並べるから，$$
+	$$その並べ方は　　　_{4}P_{${r -2}}通り$$
+   	$$よって，積の法則より4\\cdot3\\cdot_{4}P_{${r -2}}=${answer2}$$
+$$以上より，${answer1}-${answer2}=${answer}$$ `;
+}
   }
-    else if (i === 17) {
-    questionText = `$$_{${n}}\\mbox{C}_{${r}}~の値を求めよ。$$`;
-    correctAnswer = productRange(n-r+1,n)/factorial(r);
 
-  } else if (i === 18) {
-    questionText = `$$${n}~枚の絵はがきから~${r}~枚を選ぶ方法は何通りあるか。$$`;
-    correctAnswer = productRange(n-r+1,n)/factorial(r);
+}else if(M===3){let i = getRandomInt(1, 5);
 
-  } else if (i === 19) {
-    questionText = `$$${n+1}~ 角形の対角線の本数を求めよ。$$`;
-    correctAnswer = productRange(n,n+1)/factorial(2)-(n+1);
+   const n = getRandomInt(3, 8);
+  const r=getRandomInt(2, 4);
+ const upperChars = Array.from({length: n}, (_, i) => String.fromCharCode(65 + i)).join(',');
+  const lowerChars = Array.from({length: n}, (_, i) => String.fromCharCode(97 + i)).join(',');
+  const numbers = Array.from({length: r}, (_, i) => i + 1).join(',');
 
-  } else if (i === 20) {
-     questionText = `$$${n+1}~ 角形の~3~個の頂点を結んでできる三角形の個数を求めよ$$`;
-    correctAnswer = productRange(n-1,n+1)/factorial(3);
+  if (i === 1) {
+    question = `$$★★~ ${n}~人が円卓を囲んで座るとき，並び方は何通りあるか。$$`;
+    answer = productRange(1, n - 1);
+solution=`$$(${n}-1)!=${createDescendingSequence(n-1, n-1)}=${answer}$$`;
+  } else if (i === 2) {
+  let j = getRandomInt(1, 2);
+
+  if (j === 1) {
+    question = `$$★★★~\\mbox{${upperChars}}~の~${n}~人が輪の形に並ぶとき，$$
+$$\\mbox{A}~と~\\mbox{B}~が隣り合うような並び方は何通りあるか。$$`;
+
+    answer = productRange(1, n - 2) * 2;
+
+    solution = `$$隣り合う2人をまとめて1組とする。$$
+$$この1組と残りの${n - 2}人の並び方は，${n - 1}人の円順列であるから，$$
+$$(${n - 1} - 1)! = ${n - 2}! 通りある。$$
+$$その各々に対して，\\mbox{A}と\\mbox{B}の並び方は2通りある。$$
+$$よって，求める並び方は ${n - 2}! \\cdot 2 = ${answer} $$`;
+  } else if (j === 2) {
+    let n1 = getRandomInt(1, 4) * 2;
+	 const upperChars2 = Array.from({length: n1}, (_, i) => String.fromCharCode(65 + i)).join(',');
 
 
-  } else if (i === 21) {
-    const A = 'a，'.repeat(r);
+
+    question = `$$★★★~\\mbox{${upperChars2}}~の~${n1}~人が輪の形に並ぶとき，$$
+$$\\mbox{A}~と~\\mbox{B}~が向かい合うような並び方は何通りあるか。$$`;
+
+    answer = productRange(1, n1 - 2);
+
+    solution = `$$\\mbox{A}の位置を固定したとき，\\mbox{B}は\\mbox{A}の真向かいの位置に固定される。$$
+$$よって，求める並び方は ${n1 - 2} 人の順列の総数に等しいから，$$
+$$${n1 - 2}! = ${answer} $$`;
+  }
+}
+ else if (i === 3) {
+    question = `$$★★★~ ${n} 個の文字~ ${lowerChars} ~から，重複を許して ~${r}~ 個取り出して ~1~列に並べるとき，文字列は何通りできるか。$$`;
+    answer = Math.pow(n, r);
+solution=`$$ ${n} 個から${r}個とる重複順列の総数だから，${n}^${r}=${answer}$$`;
+
+  } else if (i === 4) {
+    question = `$$★★★~ ${r}個の数字 ${numbers}~を重複を許して使ってできる ~${n}~ 桁の整数は何個あるか。$$`;
+    answer = Math.pow(r, n);
+solution=`$$ ${n} 個から${r}個とる重複順列の総数だから，${n}^${r}=${answer}$$`;
+
+  }else if (i === 5) {let j=getRandomInt(1,2);
+	if(j===1){
+    question = `$$★★★★★~ ${n}人を，2つの部屋 ~\\mbox{A}，\\mbox{B}に入れる方法は何通りあるか。$$
+$$ただし，1人も入らない部屋があってよいものとする$$`;
+    answer = Math.pow(2, n);
+solution=`$$ ${n} 人それぞれについて，A,Bの2通りが考えられるから$$
+$$2^${n}=${answer}$$
+`;}else {
+    question = `$$★★★★★~ ${n}人を，2つの部屋 ~\\mbox{A}，\\mbox{B}に入れる方法は何通りあるか。$$
+$$ただし，少なくとも1人は部屋に入るものとする。$$`;
+    answer = Math.pow(2, n)-2;
+solution=`$$ ${n} 人それぞれについて，A,Bの2通りが考えられるから$$
+$$2^${n}通り$$
+$$このとき，全員がAに入る，全員がBに入る2通りがこの中に含まれるので$$
+$$2^${n}-2=${answer}$$
+`;}
+  }
+
+}else if(M===4){
+      let i =getRandomInt(1, 8) 
+   const n = getRandomInt(3, 10);
+  const r=getRandomInt(0, n);
+
+      if (i === 1) {
+    question = `$$★~_{${n}}\\mbox{C}_{${r}}~の値を求めよ。$$`;
+    answer = productRange(n-r+1,n)/factorial(r);
+	solution=`$$_{${n}}\\mbox{C}_{${r}}=\\frac{${createDescendingSequence(n, r)}}{${createDescendingSequence(r, r)}}=${answer}$$`;
+
+  } else if (i === 2) {
+    question = `$$★★~${n}~枚の絵はがきから~${r}~枚を選ぶ方法は何通りあるか。$$`;
+    answer = productRange(n-r+1,n)/factorial(r);
+	solution=`$$_{${n}}\\mbox{C}_{${r}}=\\frac{${createDescendingSequence(n, r)}}{${createDescendingSequence(r, r)}}=${answer}$$`;
+
+
+  } else if (i === 3) {
+    question = `$$★★★~${n+1}~ 角形の対角線の本数を求めよ。$$`;
+    answer = productRange(n,n+1)/factorial(2)-(n+1);
+	solution=`$$${n+1}角形の頂点から2点を1組決めて結ぶと線分が1本できる。$$
+$$線分の本数は全部で_{${n+1}}\\mbox{C}_{2}本ある。$$
+$$このうち，${n+1}本が辺であり，残りが対角線である。$$
+$$よって，_{${n+1}}\\mbox{C}_{2}-${n+1}=\\frac{${createDescendingSequence(n+1, 2)}}{${createDescendingSequence(2, 2)}}-${n+1}=${answer}$$`;
+
+
+  } else if (i === 4) {
+     question = `$$★★★~${n+1}~ 角形の~3~個の頂点を結んでできる三角形の個数を求めよ$$`;
+    answer = productRange(n-1,n+1)/factorial(3);
+	solution=`$$${n+1}角形の頂点のうち，どの3点も同一直線上にない。$$
+$$3点で三角形が1個できるから，求める個数は$$
+
+$$_{${n+1}}\\mbox{C}_{${3}}=\\frac{${createDescendingSequence(n+1, 3)}}{${createDescendingSequence(3, 3)}}=${answer}$$`;
+
+
+  } else if (i === 5) {
+    const A = 'a，'.repeat(r+1);
     const B = 'b，'.repeat(n-r-1)+'b';
 
-    questionText = `$$ ${A}${B}~ という単語の ~${n}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
-    correctAnswer = productRange(n-r+1,n)/factorial(r);
+    question = `$$★★★★~ ${A}${B}~ という単語の ~${n+1}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
+    answer = productRange(n-r+1,n+1)/factorial(r+1);
+solution=`$$ aが${r+1}個，bが${n-r}個あり，それを1列に並べるから$$
+$$\\frac{${n+1}!}{${r+1}!\\cdot${n-r}!}=${answer}$$`;
 
-  } else if (i === 22) {
+  } else if (i === 6) {
     const n1 = getRandomInt(2, 3);
     const n2 = getRandomInt(1, 3);
     const n3 = getRandomInt(1, 3);
@@ -189,33 +490,176 @@ else if (i === 12) {
     const B = 'b，'.repeat(n2);
     const C = 'c，'.repeat(n3 -1)+'c';
 
-    questionText = `$$ ${A}${B}${C}~ という単語の ~${n1 + n2 + n3}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
-    correctAnswer = factorial(n1+n2+n3)/(factorial(n1)*factorial(n2)*factorial(n3));
+    question = `$$★★★★★~ ${A}${B}${C}~ という単語の ~${n1 + n2 + n3}~ 個の文字全部を使ってできる文字列は何通りあるか。$$`;
+    answer = factorial(n1+n2+n3)/(factorial(n1)*factorial(n2)*factorial(n3));
+solution=`$$ aが${n1}個，bが${n2}個，cが${n3}個あり，それを1列に並べるから$$
+$$\\frac{${n1+n2+n3}!}{${n1}!\\cdot${n2}!\\cdot${n3}!}=${answer}$$`;
   } 
-    else if (i === 23) {
-    questionText = `$$${n-r+2}~本の平行線と，それに交わる ~${r+2}~ 本の平行線によってできる平行四辺形は何個あるか$$`;
-    correctAnswer = productRange(n-r+1,n-r+2)*productRange(r+1,r+2)/4;
+    else if (i === 7) {
+    question = `$$★★★★~${n-r+2}~本の平行線と，それに交わる ~${r+2}~ 本の$$ $$平行線によってできる平行四辺形は何個あるか$$`;
+    answer = productRange(n-r+1,n-r+2)*productRange(r+1,r+2)/4;
+solution=`$$${n-r+2}~本の平行線から2本選び， ~${r+2}~ 本の平行線から2本選ぶと$$
+$$平行四辺形が1個できる。$$
+$$よって，_{${n-r+2}}\\mbox{C}_{2}\\cdot _{${r+1}}\\mbox{C}_{2}=${answer}$$`;
+
+  }else if (i === 8) { 
+
+
+
+let v=getRandomInt(4,6);
+let h=getRandomInt(4,6); 
+let p=getRandomInt(2,v-2);
+let q=getRandomInt(2,h-2);
+ 
+drawGridAndPoints(v, h, p, q)
+ 
+    question =` $$★★★★★~図のように，東西に${h}本，南北に${v}本の道がある。$$
+$$\\mbox{A}から\\mbox{B}まで\\mbox{C}を通って最短距離で行く道順は何通りあるか
+$$`;
+    answer = (productRange(q+1,p+q)/factorial(p))*(productRange(v-p,v+h-p-q-2)/factorial(h-q-1));
+solution=`$$ 北に1区画進むことを↑，東に1区画進むことを→と表すと， $$
+$$AからCまで最短距離で行く道順の総数は，$$
+$$${p}個の↑と${q}個の→を1列に並べる総数に等しいから，$$
+$$_{${p+q}}C_{${p}}通り$$
+$$同様に，点CからBまで最短距離で行く道順の総数は，_{${v+h-p-q-2}}C_{${v-p-1}}通り$$
+$$よって，_{${p+q}}C_{${p}}\\cdot_{${v+h-p-q-2}}C_{${v-p-1}}=${answer}$$`;
+document.getElementById("gridCanvas").style.display = "block";
+  }}
+ document.getElementById('question').innerHTML = question;
+      document.getElementById('userInput').value = '';
+      window.correctAnswer = answer;
+      window.solutionText = solution;
+      MathJax.typeset();
+    }     
+
+    function checkAnswer() {
+      const user = parseFloat(document.getElementById('userInput').value);
+      const correct = window.correctAnswer;
+      const feedback = document.getElementById('feedback');
+      feedback.textContent = (user === correct) ? '正解！' : `不正解。正解は ${correct} です。`;
+    }
+
+    function showSolution() {
+      document.getElementById('solution').innerHTML = window.solutionText;
+      MathJax.typeset();
+    }
+
+    window.onload = function () {
+      generateQuiz();
+      resizeCanvas();
+    };
+
+    function resizeCanvas() {
+      const canvas = document.getElementById('blackboard');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+  <script>
+    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, chtml: { displayAlign: "left" } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div id="left-area">
+      <h1>場合の数まとめ</h1>
+      <label>モード:
+        <select id="modeSelect" style="padding: 1em 1em; font-size: 0.8rem;"onchange="generateQuiz()">
+          <option value="1" selected>和の法則・積の法則</option>
+          <option value="2">順列</option>
+          <option value="3">円順列・重複順列</option>
+          <option value="4">組み合わせ</option>
+          <option value="0">ランダム</option>
+        </select>
+      </label>
+      <div id="question" class="question"></div>
+<canvas id="gridCanvas" width="300" height="200" style="border:1px solid #000; display: none;"></canvas>
+
+      <input type="number" id="userInput"style="padding: 1em 1em; font-size: 0.8rem;" placeholder="答えを入力">
+      <div>
+        <button onclick="checkAnswer()"style="padding: 1em 1em; font-size: 0.8rem;">答え合わせ</button>
+        <button onclick="showSolution()"style="padding: 1em 1em; font-size: 0.8rem;">解説</button>
+        <button onclick="generateQuiz()"style="padding: 1em 1em; font-size: 0.8rem;">再出題</button>
+      </div>
+      <div id="feedback" class="feedback"></div>
+      <div id="solution" class="solution"></div>
+    </div>
+  
+  <div id="right-area">
+      <p>ここにメモを書いたり、図形を描いたりできます。</p>
+      <canvas id="blackboard" width="700"height="700"></canvas>
+<button onclick="clearBoard()"style="padding: 1em 1em; font-size: 0.8rem;">クリア</button>
+<button onclick="toggleEraser()"style="padding: 1em 1em; font-size: 0.8rem;">消しゴム切替</button>
+      
+    </div>
+  </div>
+
+<script>
+  const canvas = document.getElementById('blackboard');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let isErasing = false; // 消しゴムモードのフラグ
+
+  function toggleEraser() {
+    isErasing = !isErasing;
+    // メッセージ表示はなし
   }
 
+  function getStrokeStyle() {
+    return isErasing ? "#222" : "white"; // 黒板色 or 白
+  }
 
+  function getLineWidth() {
+    return isErasing ? 12 : 2; // 消しゴムは太め
+  }
 
+  function drawLine(x, y) {
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = getStrokeStyle();
+    ctx.lineWidth = getLineWidth();
+    ctx.stroke();
+  }
 
+  canvas.addEventListener('mousedown', e => {
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+  });
 
+  canvas.addEventListener('mousemove', e => {
+    if (drawing) drawLine(e.offsetX, e.offsetY);
+  });
 
-  window.correctAnswer = correctAnswer;
-  document.getElementById("question").innerHTML = questionText;
-  document.getElementById("feedback").innerHTML = "";
-  document.getElementById("answer").value = "";
-  MathJax.typeset();
-}
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('mouseleave', () => drawing = false);
 
-function checkAnswer() {
-  const userAnswer = parseInt(document.getElementById("answer").value);
-  const feedback = userAnswer === window.correctAnswer ? '正解です！' : `不正解です。正解は ${window.correctAnswer} 通りです。`;
-  document.getElementById("feedback").innerText = feedback;
-}
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    ctx.beginPath();
+    ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    drawing = true;
+  });
 
-generateQuestion();
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    drawLine(touch.clientX - rect.left, touch.clientY - rect.top);
+  });
+
+  canvas.addEventListener('touchend', () => drawing = false);
+
+  function clearBoard() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 </script>
+
 </body>
 </html>
