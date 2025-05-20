@@ -139,7 +139,8 @@ function createDescendingSequence(n, r) {
     let R2= r2===2?'(x+y)':r2===3?'(x+y+z)':'(x+y+z+w)';
     answer = r1*r2;
     question = `$$${R1}${R2}~を展開したときの項の数を求めよ。 $$`;
-	solution=`$$かっこの中の項の個数同士をかければよい。${r1}\\times${r2}$$`;
+	solution=`$$展開した際の項は，左のカッコの中の項×右のカッコの中の項であるから$$
+ $$積の法則より，${r1}\\times${r2}$$`;
  } else if (i === 7) {
   const r1 = getRandomInt(1, 3);
   const r2 = getRandomInt(1, 3);
