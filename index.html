@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>数学ⅠA問題集</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+    }
+
+    nav {
+      background-color: #0077cc;
+      padding: 1em;
+      position: relative;
+      color: white;
+    }
+
+    .menu {
+      display: flex;
+      gap: 2em;
+    }
+
+    .menu a {
+      color: white;
+      text-decoration: none;
+      font-weight: bold;
+      position: relative;
+    }
+
+    .dropdown-content, .sub-dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f1f1f1;
+      min-width: 200px;
+      box-shadow: 0px 8px 16px rgba(0,0,0,0.2);
+      z-index: 1;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    .dropdown-content a {
+      color: #0077cc;
+      padding: 1em;
+      display: block;
+      text-decoration: none;
+    }
+
+    .dropdown-content a:hover {
+      background-color: #e0f7fa;
+    }
+
+    .sub-dropdown {
+      position: relative;
+    }
+
+    .sub-dropdown-content {
+      top: 0;
+      left: 100%;
+    }
+
+    .sub-dropdown:hover .sub-dropdown-content {
+      display: block;
+    }
+
+    .sub-dropdown > a::after {
+      content: " ▸";
+      font-size: 0.9em;
+    }
+
+    #toggleMenu {
+      background: #005fa3;
+      color: white;
+      padding: 0.5em 1em;
+      border: none;
+      cursor: pointer;
+      font-size: 1em;
+      margin-bottom: 1em;
+    }
+
+    #menuContainer {
+      display: block;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100vh;
+      border: none;
+    }
+    @media (orientation: portrait) {
+      .container {
+        flex-direction: column;
+      }
+
+      #left-area, #right-area {
+        height: 50vh;
+      }
+
+
+    body {
+    font-size: 2em;
+  }
+
+   select, button {
+    font-size: 1.5em;
+  }
+}
+  </style>
+</head>
+<body>
+  <nav>
+    <button id="toggleMenu">メニューを隠す</button>
+    <div id="menuContainer">
+      <div class="menu">
+        <div class="dropdown">
+          <a href="#">問題一覧 ▾</a>
+          <div class="dropdown-content">
+            <div class="sub-dropdown">
+              <a href="#">数学Ⅰ</a>
+              <div class="sub-dropdown-content">
+              </div>
+            </div>
+            <div class="sub-dropdown">
+              <a href="#">数学A</a>
+              <div class="sub-dropdown-content">
+                <a href="集合の基礎.html" target="content-frame">集合の基礎</a>
+                <a href="和の法則・積の法則.html" target="content-frame">和の法則・積の法則</a>
+                <a href="順列基礎問題.html" target="content-frame">順列基礎問題</a>
+                <a href="円順列・重複順列.html" target="content-frame">円順列・重複順列</a>
+                <a href="組み合わせ.html" target="content-frame">組み合わせ</a>
+                <a href="場合の数まとめ.htmll" target="content-frame">場合の数まとめ</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+  <iframe name="content-frame" src="top.html" id="content-frame"></iframe>
+  <script>
+    function loadPage(url) {
+      document.getElementById("content-frame").src = url;
+    }
+  </script>
+</main>
+
+
+  <script>
+    const toggleBtn = document.getElementById('toggleMenu');
+    const menuContainer = document.getElementById('menuContainer');
+    let visible = true;
+
+    toggleBtn.addEventListener('click', () => {
+      visible = !visible;
+      menuContainer.style.display = visible ? 'block' : 'none';
+      toggleBtn.textContent = visible ? 'メニューを隠す' : 'メニューを表示';
+    });
+  </script>
+</body>
+</html>
