@@ -173,7 +173,7 @@ $$大人の並びかたが${r2}!~通り，子どもの並びかたが${r1}!~通�
 $$積の法則より，~~${r2}!\\cdot ${r1}!=${answer}~通り$$`; }
 	  }else{
 		  question = `$$大人${r1}~人 ，子ども~${r2}~人が~1~列に並ぶとき，大人が両端に並ぶ並び方を求めよ。$$`;
-		  answer = productRange(2, r1)*factorial(r1+r2 -2);
+		  answer = productRange(r1-1, r1)*factorial(r1+r2 -2);
 		  solution=`$$はじめに大人${r1}~人を左端，右端に並べる方法は$$
     	$$_{${r1}}P_{2}~通りある。$$
  	$$残りの大人${r1 -2}~人と子ども${r2}人の並び方は，${r2 + r1 -2}! 通り。$$
@@ -359,7 +359,7 @@ $$以上より，${answer1}-${answer2}=${answer}$$ `;
   }
 
   function getLineWidth() {
-    return isErasing ? 12 : 2; // 消しゴムは太め
+    return isErasing ? 25 : 2; // 消しゴムは太め
   }
 
   function drawLine(x, y) {
