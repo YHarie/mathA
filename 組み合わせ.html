@@ -151,6 +151,7 @@ function drawGridAndPoints(v, h, p, q) {
 
 
     function generateQuiz() { 
+	    document.getElementById("gridCanvas").style.display = "none";
       document.getElementById('feedback').textContent = '';
       document.getElementById('solution').textContent = '';
       let i = parseInt(document.getElementById('modeSelect').value);
