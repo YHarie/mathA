@@ -155,8 +155,8 @@ function drawGridAndPoints(v, h, p, q) {
       document.getElementById('feedback').textContent = '';
       document.getElementById('solution').textContent = '';
       let i = parseInt(document.getElementById('modeSelect').value);
-   const n = getRandomInt(3, 10);
-  const r=getRandomInt(0, n);
+   let n = getRandomInt(3, 10);
+  let r=getRandomInt(0, n);
  if (i === 0) i = getRandomInt(2, 8);
 
       if (i === 1) {
@@ -189,6 +189,7 @@ $$_{${n+1}}\\mbox{C}_{${3}}=\\frac{${createDescendingSequence(n+1, 3)}}{${create
 
 
   } else if (i === 5) {
+r=getRandomInt(1,n-1);
     const A = 'a，'.repeat(r+1);
     const B = 'b，'.repeat(n-r-1)+'b';
 
@@ -241,6 +242,50 @@ $$同様に，点CからBまで最短距離で行く道順の総数は，_{${v+h
 $$よって，_{${p+q}}C_{${p}}\\cdot_{${v+h-p-q-2}}C_{${v-p-1}}=${answer}$$`;
 document.getElementById("gridCanvas").style.display = "block";
   }
+//追加分
+if(i === 9) {
+  let C = getRandomInt(4, 7);    // 子どもの人数
+  let Ad = getRandomInt(4, 8);   // 大人の人数
+  let n = C + Ad;
+
+  let r, r1, r2;
+  do {
+    r = getRandomInt(3, Ad - 1);
+    r1 = getRandomInt(1, Ad - 2);
+    r2 = r - r1;
+  } while (r2 > C || r2 < 0); // 安全条件を追加
+
+  let k = getRandomInt(1, 2); // パターン1または2
+
+  if(k === 1) {
+    // 子どもと大人を指定して選ぶ
+    question = `$$大人${Ad}人，子ども${C}人の中から${r}人選ぶとき，$$
+$$大人${r1}人，子ども${r2}人選ぶ方法は何通りあるか。$$`;
+
+    answer = (productRange(Ad - r1 + 1, Ad) / factorial(r1)) *
+             (productRange(C - r2 + 1, C) / factorial(r2));
+
+    solution = `$$大人${Ad}人から${r1}人選ぶ方法は\\ _{${Ad}}\\mathrm{C}_{${r1}}\\ 通りある。$$
+$$その各々に対して，子ども${C}人から${r2}人選ぶ方法は\\ _{${C}}\\mathrm{C}_{${r2}}\\ 通りある。$$
+$$よって，積の法則により$$
+$$\\ _{${Ad}}\\mathrm{C}_{${r1}} \\times \\ _{${C}}\\mathrm{C}_{${r2}} = ${answer}$$`;
+  }
+
+  if(k === 2) {
+    // 少なくとも1人は子ども
+    question = `$$大人${Ad}人，子ども${C}人の中から${r}人選ぶとき，$$
+$$子どもが少なくとも1人含まれるように選ぶ方法は何通りあるか。$$`;
+
+    let total = productRange(n - r + 1, n) / factorial(r);
+    let onlyChildren = (r > C) ? 0 : productRange(Ad - r + 1, Ad) / factorial(r);
+    answer = total - onlyChildren;
+
+    solution = `$$全体${n}人から${r}人選ぶ方法は\\ _{${n}}\\mathrm{C}_{${r}} = ${total}$$
+$$そのうち，全員が大人である場合は\\ _{${Ad}}\\mathrm{C}_{${r}} = ${onlyChildren}$$
+$$よって，大人が1人以上含まれる場合の数は$$
+$$${total} - ${onlyChildren} = ${answer}$$`;
+  }
+}//i=9終わり
  document.getElementById('question').innerHTML = question;
       document.getElementById('userInput').value = '';
       window.correctAnswer = answer;
@@ -285,14 +330,16 @@ document.getElementById("gridCanvas").style.display = "block";
       <h1>組み合わせの基礎</h1>
       <label>モード:
         <select id="modeSelect" style="padding: 1em 1em; font-size: 0.8rem;"onchange="generateQuiz()">
-          <option value="1" selected>1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-          <option value="5">5</option>
-	     <option value="6">6</option>
-     <option value="7">7</option>
-     <option value="8">8</option>
+          <option value="1" selected>1.　Cの計算</option>
+          <option value="2">2.　組み合わせ基礎</option>
+          <option value="4">3.　三角形の個数</option>
+		          <option value="3">4.　対角線の本数</option>
+	     <option value="9">5.　条件付の選び方</option>
+     <option value="7">6.　平行四辺形の個数</option>
+          <option value="5">7.　同じ文字を含む順列１</option>
+	     <option value="6">8.　同じ文字を含む順列２</option>
+     <option value="8">9.　最短経路</option>
+
           <option value="0">ランダム</option>
         </select>
       </label>
