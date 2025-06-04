@@ -146,6 +146,13 @@
       document.getElementById("content-frame").src = url;
     }
   </script>
+    <footer style="text-align:center; padding: 1em; color: #777;">
+  &copy; <span id="year"></span> あなたの名前. All rights reserved.
+</footer>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
 </main>
 
 
