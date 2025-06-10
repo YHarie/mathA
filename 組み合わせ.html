@@ -277,7 +277,7 @@ $$\\ _{${Ad}}\\mathrm{C}_{${r1}} \\times \\ _{${C}}\\mathrm{C}_{${r2}} = ${answe
 $$子どもが少なくとも1人含まれるように選ぶ方法は何通りあるか。$$`;
 
     let total = productRange(n - r + 1, n) / factorial(r);
-    let onlyChildren = (r > C) ? 0 : productRange(Ad - r + 1, Ad) / factorial(r);
+    let onlyChildren = (r > Ad) ? 0 : productRange(Ad - r + 1, Ad) / factorial(r);
     answer = total - onlyChildren;
 
     solution = `$$全体${n}人から${r}人選ぶ方法は\\ _{${n}}\\mathrm{C}_{${r}} = ${total}$$
