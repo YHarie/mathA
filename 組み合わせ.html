@@ -157,7 +157,7 @@ function drawGridAndPoints(v, h, p, q) {
       let i = parseInt(document.getElementById('modeSelect').value);
    let n = getRandomInt(3, 10);
   let r=getRandomInt(0, n);
- if (i === 0) i = getRandomInt(2, 10);
+ if (i === 0) i = getRandomInt(2, 11);
 
       if (i === 1) {
     question = `$$_{${n}}\\mbox{C}_{${r}}~の値を求めよ。$$`;
@@ -385,6 +385,43 @@ $$\\frac{${combi}}{${m-1}!} = ${answer}$$`;
 
 }//k1=2
 }
+if(i===11){
+let k=getRandomInt(1,2);
+question=`$$等式x+y+z=${n}を満たす${k===1 ? `負でない整数`:`自然数`}x,y,zの組は何個あるか。$$`;
+if(k===1){
+answer=productRange(n+1,n+2)/2;
+solution=`$$異なる3個のものから重複を許して${n}個取り出す総数に等しいから$$
+$$_{3+${n}-1}\\mbox{C}_{${n}}=_{${n+2}}\\mbox{C}_{${2}}=${answer}$$
+$$【別解】$$
+$$ ${n}個の〇と2個の仕切りの順列を作り，$$
+$$仕切りで分けられた3か所の〇の個数を$$
+$$左から順にx,y,zとすると得られる。$$
+$$よって，求める個数は，${n+2}個の場所から，$$
+$$〇を入れる${n}個の場所を選ぶ方法の総数に等しいから$$
+$$\\frac{${n+2}!}{${n}! \\cdot 2!}=${answer}$$`;
+}
+if(k===2){
+answer=productRange(n-2,n-1)/2;
+solution=`$$x-1=X，y-1=Y，z-1=Zとおくと，$$
+$$X\\geqq 0，Y\\geqq 0，Z\\geqq 0$$
+$$また，　x=X+1，y=Y+1，z=Z+1$$
+$$これらをx+y+z=${n}に代入すると$$
+$$X+Y+Z=${n-3}$$
+$$この等式を満たす負でない整数X,Y,Zの組は$$
+$$異なる3個のものから重複を許して${n-3}個取る組み合わせの総数に等しい。$$
+$$よって，_{3+${n-3}-1}\\mbox{C}_{${n-3}}=_{${n-1}}\\mbox{C}_{${2}}=${answer}$$
+$$【別解】$$
+$$この等式を満たす自然数x,y,zの組は$$
+$$ ${n}個の〇を1列に並べ，$$
+$$その間の${n-1}か所のうち，2か所に仕切りを入れ，$$
+$$仕切りで分けられた3か所の〇の個数を$$
+$$左から順にx,y,zとすると得られる。$$
+$$よって，求める個数は，$$
+$$_{${n-1}}\\mbox{C}_{${2}}=${answer}$$`;
+
+
+}
+}//i=11
 
 
  document.getElementById('question').innerHTML = question;
@@ -441,6 +478,7 @@ $$\\frac{${combi}}{${m-1}!} = ${answer}$$`;
           <option value="5">8.　同じ文字を含む順列１</option>
 	     <option value="6">9.　同じ文字を含む順列２</option>
      <option value="8">10.　最短経路</option>
+	     <option value="11">11.　重複組み合わせ</option>
           <option value="0">ランダム</option>
         </select>
       </label>
