@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>命題と条件</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+    }
+
+    #left-area, #right-area {
+      padding: 1em;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+
+    #left-area {
+      flex: 1;
+      background-color: #f9f9f9;
+      font-size: 1em;
+
+    }
+
+    #right-area {
+      flex: 1;
+      background-color: #222;
+      color: white;
+    }
+         body{font-size:1.3em;}
+    @media (orientation: portrait) {
+      .container {
+        flex-direction: column;
+      }
+
+      #left-area, #right-area {
+        height: 50vh;
+      }
+
+
+    body {
+    font-size: 2em;
+  }
+
+   select, button {
+    font-size: 1.5em;
+  }
+}
+
+    .correct { color: green; }
+    .incorrect { color: red; }
+
+    #blackboard {
+      width: 100%;
+      height: auto;
+      max-height: 80vh;
+      touch-action: none;
+    }
+label {
+    font-size: 1.5rem;
+  }
+  select {
+    font-size: 1.4rem;
+    margin: 0 0.5em;
+  }
+  </style>
+  <script>
+    function getRandomInt(min, max, excludeZero = false) {
+      let v;
+      do {
+        v = Math.floor(Math.random() * (max - min + 1)) + min;
+      } while (excludeZero && v === 0);
+      return v;
+    }
+//インフラ関数下から。
+function insu(a, b, c) {//因数定理を利用した因数分解。3次式
+  for (let l = -10; l <= 10; l++) {
+    const value = a * l * l + b * l + c;
+    if (value === 0) {
+      return -l; // 最初に見つけた解を返して終了
+    }
+  }
+  return null; // 該当する値がない場合
+}
+
+
+
+    function gcd(a, b) {//最大公約数
+      return b === 0 ? Math.abs(a) : gcd(b, a % b);
+    }
+	function lcm(a, b) {//最小公倍数
+	  if (a === 0 || b === 0) return 0; // どちらかが0のときは0
+	  return Math.abs(a * b) / gcd(a, b);
+	}
+
+    function moji(b, variable = "") {//途中の項。プラス，マイナスもつける。
+      if (b === 0) return "";
+      if (b === 1) return `+${variable}`;
+      if (b === -1) return `-${variable}`;
+      return `${b > 0 ? "+" : ""}${b}${variable}`;
+    }
+
+    function keisu(b, variable = "") {//係数。1，-1のとき省略できるようにする。
+      if (b === 0) return "";
+      if (b === 1) return `${variable}`;
+      if (b === -1) return `-${variable}`;
+      return `${b}${variable}`;
+    }
+  function teisu(b, variable = "") {//定数項
+      if (b === 0) return "";
+     return `${b > 0 ? "+" : ""}${b}${variable}`;
+    }
+
+function kakko(n) {//負の数にカッコをつける
+  return n < 0 ? `(${n})` : `${n}`;
+}
+function kanyaku(n,j) {//ルートの簡約化 j=1の時は文字列，j=2の時は配列で数値を返す。[外，中]
+  if (n < 0) return `i√${-n}`; // 負の数は虚数
+  if (n === 0) return "0";
+  if (n === 1) return "1";
+
+  let outside = 1;
+  let inside = n;
+
+  for (let i = 2; i * i <= inside; i++) {
+    while (inside % (i * i) === 0) {
+      inside /= i * i;
+      outside *= i;
+    }
+  }
+if(j===1){
+ if (inside === 1) return `${outside}`;
+if (outside === 1) return `\\sqrt{${inside}}`;
+
+return `${outside}\\sqrt{${inside}}`;}
+if(j===2){
+return [outside,inside];
+
+}
+}
+
+function bunsu(s, b) {//分数表記してくれる。分母が1のときは自動的に分子だけ返す。yakubunしてから使うといいかも。
+[s,b]=yakubun(s,b);
+  if (b === 1) { return `${s}`; }
+  if (b === -1) { return `${-s}`; }
+  return s < 0 ? `-\\frac{${-s}}{${b}}` : `\\frac{${s}}{${b}}`;
+}
+
+
+function yakubun(numerator, denominator) {//約分関数。[a,b]=yakubun(a,b)のように使う。
+  if (denominator === 0) {
+    throw new Error("分母が0です");
+  }
+
+  const divisor = gcd(Math.abs(numerator), Math.abs(denominator));
+  numerator = numerator/divisor;
+  denominator = denominator/divisor;
+
+  // 分母を正にする
+  if (denominator < 0) {
+    numerator = -numerator;
+    denominator = -denominator;
+  }
+
+  return [numerator, denominator];
+}
+//インフラ関数ここまで
+//円の方程式用関数
+function tenkai(a,b)//(ax+b)^2の展開したときの係数を返す。
+{
+return [a*a,2*a*b,b*b];//次数順に係数を返す。
+
+}
+function distance(a,b,c,x,y){//点と直線の距離
+let p,q,m,n,r;
+p=Math.abs(a*x+b*y+c);
+[m,n]=kanyaku(a*a+b*b,2);//2は数字配列[外，中]
+q=m*n;
+[p,q]=yakubun(p,q);
+r=kanyaku(n,1);//文字列を返す。
+let answer= n===1 ? `${bunsu(p,q)}`: q===1 ? `${keisu(p)}${r}`: `\\frac{${keisu(p)}${r}}{${q}}`;
+return answer;
+}
+
+function generateQuiz() {//問題生成関数
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('solution').textContent = '';
+  let i = parseInt(document.getElementById('modeSelect1').value);
+
+ if ( i === 0) i = getRandomInt(1, 4);//1～4です。
+  let question = '', answer = 0, solution = '';
+  let theta;
+  if(i===1){//命題の真偽
+    let j=getRandomInt(1,2);
+    let mei;
+    if(j===1){
+      let n=getRandomInt(-4,4,true);
+       mei=[`x\\lt${n}ならば，x\\lt${n-1}`,`x\\gt${n}ならば，x\\gt${n-1}`,`x\\lt${n}ならば，x\\lt${n+1}`,`x\\gt${n}ならば，x\\gt${n+1}`,
+        `x^2 =${n**2}ならば，x=${n}`,`x=${n}ならば，x^2=${n**2}`];
+        let k=getRandomInt(0,5);
+        let TF=[`偽である。x=${n-0.5}等が当てはまらない。`,`真である。`,`真である。`,`偽である。x=${n+0.5}等が当てはまらない。`,
+          `偽である。x=${-n}`,`真である。`        ];
+      
+      question=`$$xを実数とするとき,$$
+      $$命題「${mei[k]}」の真偽を答えよ。$$`;
+      solution=`$$ ${TF[k]}$$`;
+    }
+    if(j===2){
+      mei=[`xy=xzならば，y=z`,`x\\lt yならば，xz\\lt yz`,`y=zならば，xy=xz`,`xz\\lt yz ならば，x\\lt y`,`x+z=y+zならばx=y`];
+      let TF=[`偽である。x=0であるとき，y=zとは限らない。`,`偽である。z\\leqq 0 のとき成り立たない。`,`真である。`,
+      `偽である。z\\lt 0 のとき，x\\gt yである。`,`真である。`];
+      let k=getRandomInt(0,4);
+      question=`$$x，y，zを実数とするとき，$$
+      $$命題「${mei[k]}である」の真偽を答えよ。$$`;
+      solution=`$$${TF[k]}$$`;
+    }
+    
+  }//i=1
+  if(i===2){
+    let j=getRandomInt(0,3);//解答番号でもある
+    let A=[`必要条件であるが，十分条件ではない。`,`十分条件であるが，必要条件ではない。`,`必要十分条件である。`,`必要条件でも十分条件でもない。`];
+    let condition1,condition2;
+    if(j<2){
+      let n=getRandomInt(-3,3,true);
+      let m;
+      do{m=getRandomInt(-4,4,true)}while(m===n);
+      
+      let Cond=[[`x^2=${n**2}`,`x=${n}`],[`x^2${moji(-(m+n),`x`)}${teisu(m*n)}=0`,`x=${n}`],[`a+b=${m+n}`,`a=${m}かつb=${n}`],[`ab=${m*n}`,`a=${m}かつb=${n}`],
+      [`x\\lt ${m+1}`,`x\\lt ${m}`],[`x\\gt ${n-1}`,`x\\gt ${n}`]];
+      let k=getRandomInt(0,5);
+      if(j===0){
+      [condition1,condition2]=Cond[k];}
+      if(j===1){[condition2,condition1]=Cond[k];}
+    }
+    if(j===2){
+      let n=getRandomInt(1,4);
+      let m=n*getRandomInt(-1,1,true);
+      let Cond=[[`x=${m}`,`x^2${moji(-m*2,`x`)}${teisu(m**2)}=0`],[`|x|\\lt ${n}`,`${-n}\\lt x \\lt ${n}`],[`a=b`,`a+c=b+c`],[`|x|=${n}`,`x^2 =${n**2}`],[`xy\\gt 0かつx+y\\gt 0`,`x\\gt 0 かつ y\\gt 0`]];
+      let k=getRandomInt(0,4);
+      let l=getRandomInt(0,1);
+      let C=Cond[k];
+      [condition1,condition2]=[C[l%2],C[(l+1)%2]];
+    }
+    if(j===3){
+      let n=getRandomInt(1,4);
+      let m=n*getRandomInt(-1,1,true);
+      let Cond=[[`x\\lt ${m}`,`x\\gt${m+1}`],[`x\\neq${m}`,`x\\gt${m+1}`],[`|x|\\gt${n}`,`${-n}\\lt x \\lt ${n}`],[`x^2${moji(2*m,`x`)}${teisu(m**2)}=0`,`x=${m}`]];
+      let k=getRandomInt(0,4);
+      let l=getRandomInt(0,1);
+      let C=Cond[k];
+      [condition1,condition2]=[C[l%2],C[(l+1)%2]];
+    }
+    question=`$$次の\\boxed{　　　}の中は「必要条件であるが十分条件ではない」,$$
+    $$「十分条件であるが必要条件ではない」，「必要十分条件である」$$
+    $$「必要条件でも十分条件でもない」のうち，どれが適するか$$
+    $$$$
+    $$「${condition1}」は「${condition2}」であるための \\boxed{　　　}$$`;
+    solution=`$$${A[j]}$$`;
+  }//i=2
+  if(i===3){
+    let n=getRandomInt(-5,5);
+    let FTG=[[`=`,`\\neq`],[`\\gt`,`\\leqq`],[`\\lt`,`\\geqq`]];
+    let andor=[`かつ`,`または`];
+    let num=[[`有理数`,`無理数`],[`奇数`,`偶数`]];
+    let condition,notcond;
+    let j=getRandomInt(0,5);
+    if(j<4){
+      let k=FTG[getRandomInt(0,2)];
+      let l=getRandomInt(0,1);
+     condition=`x${k[l]}${n}`;
+     notcond=`x${k[(l+1)%2]}${n}`; 
+    }
+    if(j===4){
+      let n=getRandomInt(-5,5);
+      let m=getRandomInt(-5,5);
+      let kx=FTG[getRandomInt(0,2)];
+      let ky=FTG[getRandomInt(0,2)];
+      let l1,l2,l3;
+      l1=getRandomInt(0,1);l2=getRandomInt(0,1);l3=getRandomInt(0,1);
+      condition=`x${kx[l1]}${n}${andor[l2]}y${ky[l3]}${m}`;
+      notcond=`x${kx[(l1+1)%2]}${n}${andor[(l2+1)%2]}y${ky[(l3+1)%2]}${m}`;
+    }
+    if(j===5){
+      let kind=[`実数とする。`,`整数とする。`];
+      let xy=[`x,yはともに`,`x,yの少なくとも一方は`];
+      let l=getRandomInt(0,1);
+      let l2=getRandomInt(0,1);
+      let l3=getRandomInt(0,1);
+      let ld=(l+1)%2;
+      let l2d=(l2+1)%2;
+      let l3d=(l3+1)%2;
+      let knum=num[l];
+      condition=`x,yを${kind[l]}$$
+      $$ ${xy[l2]}${knum[l3]}`;
+      notcond=`${xy[l2d]}${knum[l3d]}`;
+    }
+    question=`$$次の条件の否定を述べよ。$$
+    $$「${condition}」$$`;
+    solution=`$$${notcond}$$`;
+  }//i=3
+  if(i===4){
+    let j=getRandomInt(1,2);
+     let n=getRandomInt(-3,3,true);
+      let m;
+      do{m=getRandomInt(-4,4,true)}while(m===n);
+      let TG=[`=`,`\\neq`];
+      let andor=[`かつ`,`または`];
+      let k=getRandomInt(0,1);
+      let FTG1=[`\\gt`,`\\leqq`];
+      let FTG2=[`\\lt`,`\\geqq`];
+      let mx;
+      if(j===1){
+      let Cond=[[`x^2${TG[k]}${n**2}`,`x${TG[k]}${n}`,`x^2${TG[(k+1)%2]}${n**2}`,`x${TG[(k+1)%2]}${n}`],
+      [`x^2${moji(-(m+n),`x`)}${teisu(m*n)}${TG[k]}0`,`x${TG[k]}${n}`,`x^2${moji(-(m+n),`x`)}${teisu(m*n)}${TG[(k+1)%2]}0`,`x${TG[(k+1)%2]}${n}`],
+      [`a+b${TG[k]}${m+n}`,`a${TG[k]}${m}${andor[k]}b${TG[k]}${n}`,`a+b${TG[(k+1)%2]}${m+n}`,`a${TG[(k+1)%2]}${m}${andor[(k+1)%2]}b${TG[(k+1)%2]}${n}`],
+      [`ab${TG[k]}${m*n}`,`a${TG[k]}${m}${andor[k]}b${TG[k]}${n}`,`ab${TG[(k+1)%2]}${m*n}`,`a${TG[(k+1)%2]}${m}${andor[(k+1)%2]}b${TG[(k+1)%2]}${n}`],
+      ];
+       mx=Cond[getRandomInt(0,3)];
+    }
+    if(j===2){
+      let Cond=[[`xy${TG[k]}0`,`x${TG[k]}0`,`xy${TG[(k+1)%2]}0`,`x${TG[(k+1)%2]}0`],
+      [`x+y${FTG1[k]}0`,`x${FTG1[k]}0 ${andor[k]} y${FTG1[k]}0`,`x+y${FTG1[(k+1)%2]}0`,`x${FTG1[(k+1)%2]}0 ${andor[(k+1)%2]} y${FTG1[(k+1)%2]}0`],
+      [`x+y${FTG2[k]}0`,`x${FTG2[k]}0 ${andor[k]} y${FTG2[k]}0`,`x+y${FTG2[(k+1)%2]}0`,`x${FTG2[(k+1)%2]}0 ${andor[(k+1)%2]} y${FTG2[(k+1)%2]}0`],
+    ];
+     mx=Cond[getRandomInt(0,2)];
+    }
+      let h1=getRandomInt(0,1);
+        let h2=(h1+1)%2;
+            let condition1=mx[h1];
+      let condition2=mx[h2];
+      question=`$$次の命題の真偽を述べよ。$$
+      $$また，その逆・裏・対偶を述べ，真偽を調べよ。$$
+      $$${condition1}⇒${condition2}$$`;
+      let TF=[`偽`,`真`]
+      solution=`$$${TF[(k+h1)%2]}である。$$
+      $$逆は${mx[h2]}⇒${mx[h1]}で${TF[(k+h2)%2]}$$
+      $$裏は${mx[h1+2]}⇒${mx[h2+2]}で${TF[(k+h2)%2]}$$
+      $$対偶は${mx[h2+2]}⇒${mx[h1+2]}で${TF[(k+h1)%2]}$$`;
+  }
+
+    document.getElementById('question').innerHTML = question;
+      window.correctAnswer = answer;
+      window.solutionText = solution;
+      MathJax.typeset();
+    }
+
+    function checkAnswer() {
+      const user = parseFloat(document.getElementById('userInput').value);
+      const correct = window.correctAnswer;
+      const feedback = document.getElementById('feedback');
+      feedback.textContent = (user === correct) ? '正解！' : `不正解。正解は ${correct} です。`;
+    }
+
+   function showSolution() {
+  if (!window.solutionText) {
+    document.getElementById('solution').innerHTML = 'まだ問題が生成されていません。';
+    return;
+  }
+  document.getElementById('solution').innerHTML = window.solutionText;
+  MathJax.typeset();
+}
+
+    window.onload = function () {
+      generateQuiz();
+      resizeCanvas();
+    };
+
+    function resizeCanvas() {
+      const canvas = document.getElementById('blackboard');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+  <script>
+    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, chtml: { displayAlign: "left" } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div id="left-area">
+      <h1>命題と条件</h1>
+      <label >モード:
+        <select id="modeSelect1" onchange="generateQuiz()">
+          <option value="1" selected>1.　命題の真偽</option>
+          <option value="2">2.　必要条件・十分条件</option>
+          <option value="3">3.　条件の否定</option>
+          <option value="4">4.　逆・裏・対偶</option>
+          <option value="0">0 (ランダム)</option>
+        </select>
+
+        </label>
+      <div id="question" class="question"></div>
+       <div>
+        <button onclick="showSolution()"style="padding: 1em 2em; font-size: 1.2rem;">解説</button>
+        <button onclick="generateQuiz()"style="padding: 1em 2em; font-size: 1.2rem;">再出題</button>
+      </div>
+      <div id="feedback" class="feedback"></div>
+      <div id="solution" class="solution"></div>
+    </div>
+   <div id="right-area">
+      <p>ここにメモを書いたり、図形を描いたりできます。</p>
+      <canvas id="blackboard" width="700"height="700"></canvas>
+<button onclick="clearBoard()"style="padding: 1em 2em; font-size: 1.2rem;">クリア</button>
+<button onclick="toggleEraser()"style="padding: 1em 2em; font-size: 1.2rem;">消しゴム切替</button>
+      
+    </div>
+  </div>
+
+<script>
+  const canvas = document.getElementById('blackboard');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let isErasing = false; // 消しゴムモードのフラグ
+
+ function toggleEraser() {
+  isErasing = !isErasing;
+
+  const button = document.querySelector('button[onclick="toggleEraser()"]');
+
+  if (isErasing) {
+    button.style.backgroundColor = "crimson";
+    button.style.color = "white";
+    button.textContent = "消しゴム（使用中）";
+  } else {
+    button.style.backgroundColor = "";
+    button.style.color = "";
+    button.textContent = "消しゴム切替";
+  }
+}
+
+
+  function getStrokeStyle() {
+    return isErasing ? "#222" : "white"; // 黒板色 or 白
+  }
+
+  function getLineWidth() {
+    return isErasing ? 25 : 2; // 消しゴムは太め
+  }
+
+  function drawLine(x, y) {
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = getStrokeStyle();
+    ctx.lineWidth = getLineWidth();
+    ctx.stroke();
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (drawing) drawLine(e.offsetX, e.offsetY);
+  });
+
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('mouseleave', () => drawing = false);
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    ctx.beginPath();
+    ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    drawing = true;
+  });
+
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    drawLine(touch.clientX - rect.left, touch.clientY - rect.top);
+  });
+
+  canvas.addEventListener('touchend', () => drawing = false);
+
+  function clearBoard() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+</script>
+
+</body>
+</html>
