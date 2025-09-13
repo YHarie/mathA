@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>確率</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+    }
+
+    #left-area, #right-area {
+      padding: 1em;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+
+    #left-area {
+      flex: 1;
+      background-color: #f9f9f9;
+      font-size: 1em;
+
+    }
+
+    #right-area {
+      flex: 1;
+      background-color: #222;
+      color: white;
+    }
+         body{font-size:1.3em;}
+    @media (orientation: portrait) {
+      .container {
+        flex-direction: column;
+      }
+
+      #left-area, #right-area {
+        height: 50vh;
+      }
+
+
+    body {
+    font-size: 2em;
+  }
+
+   select, button {
+    font-size: 1.5em;
+  }
+}
+
+    .correct { color: green; }
+    .incorrect { color: red; }
+
+    #blackboard {
+      width: 100%;
+      height: auto;
+      max-height: 80vh;
+      touch-action: none;
+    }
+label {
+    font-size: 1.5rem;
+  }
+  select {
+    font-size: 1.4rem;
+    margin: 0 0.5em;
+  }
+  </style>
+  <script>
+    function getRandomInt(min, max, excludeZero = false) {
+      let v;
+      do {
+        v = Math.floor(Math.random() * (max - min + 1)) + min;
+      } while (excludeZero && v === 0);
+      return v;
+    }
+//インフラ関数下から。
+function insu(a, b, c) {//因数定理を利用した因数分解。3次式
+  for (let l = -10; l <= 10; l++) {
+    const value = a * l * l + b * l + c;
+    if (value === 0) {
+      return -l; // 最初に見つけた解を返して終了
+    }
+  }
+  return null; // 該当する値がない場合
+}
+
+
+
+    function gcd(a, b) {//最大公約数
+      return b === 0 ? Math.abs(a) : gcd(b, a % b);
+    }
+	function lcm(a, b) {//最小公倍数
+	  if (a === 0 || b === 0) return 0; // どちらかが0のときは0
+	  return Math.abs(a * b) / gcd(a, b);
+	}
+
+    function moji(b, variable = "") {//途中の項。プラス，マイナスもつける。
+      if (b === 0) return "";
+      if (b === 1) return `+${variable}`;
+      if (b === -1) return `-${variable}`;
+      return `${b > 0 ? "+" : ""}${b}${variable}`;
+    }
+
+    function keisu(b, variable = "") {//係数。1，-1のとき省略できるようにする。
+      if (b === 0) return "";
+      if (b === 1) return `${variable}`;
+      if (b === -1) return `-${variable}`;
+      return `${b}${variable}`;
+    }
+  function teisu(b, variable = "") {//定数項
+      if (b === 0) return "";
+     return `${b > 0 ? "+" : ""}${b}${variable}`;
+    }
+
+function kakko(n) {//負の数にカッコをつける
+  return n < 0 ? `(${n})` : `${n}`;
+}
+function kanyaku(n,j) {//ルートの簡約化 j=1の時は文字列，j=2の時は配列で数値を返す。[外，中]
+  if (n < 0) return `i√${-n}`; // 負の数は虚数
+  if (n === 0) return "0";
+  if (n === 1) return "1";
+
+  let outside = 1;
+  let inside = n;
+
+  for (let i = 2; i * i <= inside; i++) {
+    while (inside % (i * i) === 0) {
+      inside /= i * i;
+      outside *= i;
+    }
+  }
+if(j===1){
+ if (inside === 1) return `${outside}`;
+if (outside === 1) return `\\sqrt{${inside}}`;
+
+return `${outside}\\sqrt{${inside}}`;}
+if(j===2){
+return [outside,inside];
+
+}
+}
+
+function bunsu(s, b) {//分数表記してくれる。分母が1のときは自動的に分子だけ返す。yakubunしてから使うといいかも。
+[s,b]=yakubun(s,b);
+  if (b === 1) { return `${s}`; }
+  if (b === -1) { return `${-s}`; }
+  return s < 0 ? `-\\frac{${-s}}{${b}}` : `\\frac{${s}}{${b}}`;
+}
+
+
+function yakubun(numerator, denominator) {//約分関数。[a,b]=yakubun(a,b)のように使う。
+  if (denominator === 0) {
+    throw new Error("分母が0です");
+  }
+
+  const divisor = gcd(Math.abs(numerator), Math.abs(denominator));
+  numerator = numerator/divisor;
+  denominator = denominator/divisor;
+
+  // 分母を正にする
+  if (denominator < 0) {
+    numerator = -numerator;
+    denominator = -denominator;
+  }
+
+  return [numerator, denominator];
+}
+
+function kaijo(n){
+  let m=1;
+  if(n===0)     return 1;
+  if(n<0)     return null;
+
+  for(let i=1;i<n+1;i++){
+    m*=i;
+  }
+return m;
+
+}
+
+function parm(n,m){
+  let value=kaijo(n)/kaijo(n-m);
+  return value;
+}
+
+function combi(n,r){
+  let value=parm(n,r)/kaijo(r);
+  return value;
+}
+
+
+//インフラ関数ここまで
+//円の方程式用関数
+function tenkai(a,b)//(ax+b)^2の展開したときの係数を返す。
+{
+return [a*a,2*a*b,b*b];//次数順に係数を返す。
+
+}
+function distance(a,b,c,x,y){//点と直線の距離
+let p,q,m,n,r;
+p=Math.abs(a*x+b*y+c);
+[m,n]=kanyaku(a*a+b*b,2);//2は数字配列[外，中]
+q=m*n;
+[p,q]=yakubun(p,q);
+r=kanyaku(n,1);//文字列を返す。
+let answer= n===1 ? `${bunsu(p,q)}`: q===1 ? `${keisu(p)}${r}`: `\\frac{${keisu(p)}${r}}{${q}}`;
+return answer;
+}
+
+function generateQuiz() {
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('solution').textContent = '';
+  let i = parseInt(document.getElementById('modeSelect').value);
+
+  if (i === 0) i = getRandomInt(1, 4);
+  if(i===1){
+    let m,n,p,q,j,Q;
+    j=getRandomInt(1,3);
+    if(j===1){//トランプ
+      let mark=[`ハート`,`スペード`,`クラブ`,`ダイヤ`];
+      n=getRandomInt(2,10);
+      m=getRandomInt(0,1);
+      p=m===0 ? n:13-n+1;
+      let lg=[`以下`,`以上`];
+      let value=[`${mark[getRandomInt(0,3)]}の札`,`絵札`,`A(エース)`,`${n}${lg[m]}の札`];
+      q=[13,12,4,4*p];
+      let k=getRandomInt(0,3);
+      answer=yakubun(q[k],52);
+      
+      Q= `$$ジョーカーを除く1組のトランプ52枚の中から1枚を選ぶとき，$$
+                $$${value[k]}である確率を求めよ。$$`;
+
+      solution=`$$${value[k]}は全部で${q[k]}枚あるので，$$
+                $$求める確率は \\frac{${q[k]}}{52}
+                  ${q[k]===answer[0]?``:` = ${bunsu(answer[0],answer[1])}`}$$`;
+    
+    }
+    
+    if(j===2){
+      p=[`偶数の目`,`奇数の目`,`3の倍数`];
+      q=[3,3,2];
+      n=getRandomInt(0,2);
+      Q=`$$さいころを1個投げたとき，出た目が${p[n]}である確率を求めよ。$$`;
+      answer=yakubun(q[n],6);
+      solution=`$$
+      さいころを1個投げたときの目の出方は6通り，$$
+      $$${p[n]}の出方は${q[n]}通りであるから$$
+      $$\\frac{${q[n]}}{6}${answer[0]===q[n] ? ``:`=${bunsu(q[n],6)}`}$$`;
+
+    }
+    if(j===3){
+      n=getRandomInt(1,4);
+      m=getRandomInt(1,4);
+      let color=[`赤玉`,`白玉`];
+      let k=getRandomInt(0,1);
+      Q=`$$ ${color[0]}${n}個，${color[1]}${m}個入った袋から，玉を1個取り出すとき，$$
+      $$取り出した玉が${color[k]}である確率を求めよ。$$`;
+      q=[n,n];
+      answer=yakubun(q[k],m+n);
+      solution=`$$全部で${m+n}個ある玉のなかに，${color[k]}が${q[k]}個あるから$$
+      $$\\frac{${q[k]}}{${m+n}}${q[k]===answer[0] ? ``:`=${bunsu(q[k],m+n)}`}$$`;
+    }
+  question=Q;
+    
+  }
+  if(i===2){
+     let m,n,p,q,j,Q;
+    j=getRandomInt(1,4);
+    if(j===1){
+      p=[4,6,12];
+      let set=[[`(1,4)`,`(2,2)`,`(4,1)`],[`(1,6)`,`(2,3)`,`(3,2)`,`(6,1)`],[`(2,6)`,`(3,4)`,`(4,3)`,`(6,2)`]];
+      q=[3,4,4];
+      let k=getRandomInt(0,2);
+      Q=`$$ 2個のさいころを投げるとき，出た目の積が${p[k]}になる確率を求めよ。 $$`;
+      answer=yakubun(q[k],36);
+      solution=`$$目の積が${p[k]}となる目の組み合わせは$$
+      $$${set[k]}$$
+      $$である。$$
+      $$さいころを2個投げたときの目の出方は全部で36通りであるから$$
+      $$\\frac{${q[k]}}{36}${answer[0]===q[k] ? ``:`=${bunsu(q[k],36)}`}$$`;
+    }    
+    if(j===2){
+      n=getRandomInt(3,7);
+      let set=[];
+      q=0;
+      Q=`$$ 2個のさいころを投げるとき，出た目の和が${n}以下になる確率を求めよ。 $$`;
+      for(i=2;i<n+1;i++){
+        q+=(i-1);
+        for(let k=1 ; k<7 ; k++) {
+        if ((i - k) > 0 && (i - k) < 7){ set.push(`(${k},${i-k})`);}
+      }
+      set.push(`$$$$`)
+      }     
+      answer=yakubun(q,36);
+      solution=`$$ 目の和が${n}以下になるさいころの目の組み合わせは$$
+      $$ ${set} $$
+      $$である。$$
+      $$さいころを2個投げたときの目の出方は全部で36通りであるから$$
+      $$\\frac{${q}}{36}${answer[0]===q ? ``:`=${bunsu(q,36)}`}$$`;
+      
+    }
+    if(j===3){
+      n=getRandomInt(2,12);
+      Q=`$$ 2個のさいころを投げるとき，出た目の和が${n}になる確率を求めよ。 $$`;
+      q= n<8 ? n-1 : 13-n;
+      let set=[];
+      for(let k=1 ; k<7 ; k++) {
+        if ((n - k) > 0 && (n - k) < 7){ set.push(`(${k},${n-k})`);}
+      }
+      answer=yakubun(q,36);
+      solution=`$$ 目の和が${n}になるさいころの目の組み合わせは$$
+      $$ ${set} $$
+      $$である。$$
+      $$さいころを2個投げたときの目の出方は全部で36通りであるから$$
+      $$\\frac{${q}}{36}${answer[0]===q ? ``:`=${bunsu(q,36)}`}$$`;
+      
+    }
+    if(j===4){
+      n=getRandomInt(7,11);
+      let set=[];
+      q=0;
+      Q=`$$ 2個のさいころを投げるとき，出た目の和が${n}以上になる確率を求めよ。 $$`;
+      for(i=2;i<15-n;i++){
+        q+=(i-1);
+        let me=14-i;
+        for(let k=1 ; k<7 ; k++) {
+        if ((me - k) > 0 && (me - k) < 7){ set.push(`(${k},${me-k})`);}
+      }   set.push(`$$$$`)   }
+      answer=yakubun(q,36);
+      solution=`$$ 目の和が${n}以上になるさいころの目の組み合わせは$$
+      $$ ${set} $$
+      $$である。$$
+      $$さいころを2個投げたときの目の出方は全部で36通りであるから$$
+      $$\\frac{${q}}{36}${answer[0]===q ? ``:`=${bunsu(q,36)}`}$$`;
+      
+    }
+    question=Q;
+  }
+  if(i===3){//玉取り出し
+    let j,n,m,l,p,q,r;
+    j=getRandomInt(1,2);
+    if(j===1){
+      n=getRandomInt(2,4);
+      m=getRandomInt(2,5);
+      let tama=[`2個とも赤玉`,`2個とも白玉`,`赤玉1個と白玉1個`];
+      let k=getRandomInt(0,2);
+      p=combi(m+n,2);
+      q=[combi(n,2),combi(m,2),m*n];
+      let tama2=[`_{${n}}\\mathrm{C}_{2}`,`_{${m}}\\mathrm{C}_{2}`,`_{${n}}\\mathrm{C}_{1}\\cdot _{${m}}\\mathrm{C}_{1}`];
+     question=`$$赤玉が${n}個，白玉が${m}個入った袋から，同時に玉を2個取り出すとき，$$
+     $$ ${tama[k]}が出る確率を求めよ。$$`; 
+     answer=yakubun(q[k],p);
+     solution=`$$
+     玉の取り出し方は全部で_{${m+n}}\\mathrm{C}_{2}=${p}$$
+     $$ ${tama[k]}の取り出し方は$$
+     $$ ${tama2[k]}=${q[k]}$$
+     $$ よって，求める確率は　　\\frac{${q[k]}}{${p}}${q[k]===answer[0] ? ``:`=${bunsu(q[k],p)}`}
+     $$`;
+    }
+    if(j===2){
+      n=getRandomInt(2,4);
+      m=getRandomInt(3,5);
+      l=getRandomInt(1,2);
+      let pick1=getRandomInt(1,2);
+      let pick2=3-pick1;
+      let tama=[`赤玉${pick1}個，白玉${pick2}個`,`白玉3個`,`すべての色の玉`];
+      let k=getRandomInt(0,2);
+      p=combi(m+n+l,3);
+      q=[combi(n,pick1)*combi(m,pick2),combi(m,3),m*n*l];
+      let tama2=[`_{${m}}\\mathrm{C}_{${pick1}}\\cdot _{${n}}\\mathrm{C}_{${pick2}}`,`_{${m}}\\mathrm{C}_{3}`,
+      `_{${n}}\\mathrm{C}_{1}\\cdot _{${m}}\\mathrm{C}_{1}\\cdot _{${l}}\\mathrm{C}_{1}`];
+      question=`$$赤玉が${n}個，白玉が${m}個，青玉が${l}個入った袋から，同時に玉を3個取り出すとき，$$
+     $$ ${tama[k]}が出る確率を求めよ。$$`; 
+     answer=yakubun(q[k],p);
+     solution=`$$
+     玉の取り出し方は全部で_{${m+n+l}}\\mathrm{C}_{3}=${p}通り$$
+     $$${tama[k]}の取り出し方は${tama2[k]}=${q[k]}$$
+     $$よって求める確率は　　\\frac{${q[k]}}{${p}}${q[k]===answer[0] ? ``:`=${bunsu(q[k],p)}`}
+     $$`;
+    }
+  }
+  if(i===4){
+    n=getRandomInt(3,7);
+    const upperChars = Array.from({length: n}, (_, i) => String.fromCharCode(65 + i)).join(',');
+    Q=[`左端がAである`,`両端がAとBである`,`AとBが隣り合う`,`AとBが隣り合わない`];
+    A=[kaijo(n-1),2*kaijo(n-2),kaijo(n-1)*2,kaijo(n)-kaijo(n-1)*2];
+    k=getRandomInt(0,3);
+    S=[`${n-1}!通りある。`,`左端が\\mathrm{Aの場合，Bの場合}の2通りあり，$$ $$その各々に対して残りの${n-2}人がその間に並ぶ方法が${n-2}!通りある。`,
+      `\\mathrm{A とB}を1組として考えると，${n-2}人と1組の並びが${n-1}!通りあり，$$ $$その各々に対して\\mathrm{A,B}の並び方が2通りある。`,
+      `\\mathrm{AとB}を除く${n-2}人の並び方が${n-2}!，$$$$
+      両端と${n-2}人の間，${n-1}箇所から2か所\\mathrm{AとB}を並べる場所を選べばよいので，$$$$
+      _{${n-1}}\\mathrm{P}_{2}`,
+      `\\frac{${n-1}!}{${n}!}`,`\\frac{${n-2}!\\times 2} {${n}!}`,
+      `\\frac{${n-1}!\\times 2} {${n}!}`,`\\frac{${n-2}! \\times _{${n-1}}\\mathrm{P}_{2}} {${n}!}`
+    ];
+
+    question=`$$\\mathrm{${upperChars}}の${n}人が，$$
+    $$くじ引きで順番を決めて横1列に並ぶとき，$$
+    $$\\mathrm{${Q[k]}}確率を求めよ。$$`;
+    solution=`$$ ${n}人が1列に並ぶ方法は，全部で  ${n}!通りある。$$
+    $$このうち，\\mathrm{${Q[k]}}場合は，$$
+    $$${S[k]}$$
+    $$よって，求める確率は$$
+    $$${S[k+4]}=${bunsu(A[k],kaijo(n))}$$`;
+    answer=yakubun(A[k],kaijo(n));
+      }
+
+    document.getElementById('question').innerHTML = question;
+      window.correctAnswer = answer;
+      window.solutionText = solution;
+      document.getElementById('userInputNum').value = '';
+      document.getElementById('userInputDen').value = '';
+      MathJax.typeset();
+    }
+  
+
+    function checkAnswer() {
+  const userNum = parseInt(document.getElementById('userInputNum').value, 10);
+  const userDen = parseInt(document.getElementById('userInputDen').value, 10);
+  const [ansNum, ansDen] = window.correctAnswer;
+  const feedback = document.getElementById('feedback');
+
+  if (userNum === ansNum && userDen === ansDen) {
+    feedback.textContent = '正解！';
+    feedback.className = 'correct';
+  } else {
+    feedback.textContent = `不正解。正解は ${ansNum}/${ansDen} です。`;
+    feedback.className = 'incorrect';
+  }
+}
+
+    function showSolution() {
+      document.getElementById('solution').innerHTML = window.solutionText;
+      MathJax.typeset();
+    }
+
+    window.onload = function () {
+      generateQuiz();
+      resizeCanvas();
+    };
+
+    function resizeCanvas() {
+      const canvas = document.getElementById('blackboard');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+  <script>
+    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, chtml: { displayAlign: "left" } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div id="left-area">
+      <h1>確率</h1>
+      <label>モード:
+        <select id="modeSelect" onchange="generateQuiz()"style="padding: 1em 1em; font-size: 1.2rem;">
+          <option value="1" selected>1.　確率基本</option>
+          <option value="2">2.　２個のさいころ</option>
+          <option value="3">3.　玉の取り出し方</option>
+          <option value="4">4.　くじで決める並び方</option>
+          <option value="0">ランダム</option>
+        </select>
+      </label>
+<div id="question" class="question"></div>
+<input type="number" id="userInputNum"style="padding: 1em 0.3rem; font-size: 1.2rem;" placeholder="分子">
+<span>/</span>
+<input type="number" id="userInputDen" style="padding: 1em 0.3rem; font-size: 1.2rem;" placeholder="分母">
+<div>
+  <button onclick="checkAnswer()"style="padding: 1em 2em; font-size: 1.2rem;">答え合わせ</button>
+  <button onclick="showSolution()"style="padding: 1em 2em; font-size: 1.2rem;">解説</button>
+  <button onclick="generateQuiz()"style="padding: 1em 2em; font-size: 1.2rem;">再出題</button>
+</div>
+<div id="feedback" class="feedback"></div>
+<div id="solution" class="solution"></div>
+    </div>
+
+    <div id="right-area">
+      <p>ここにメモを書いたり、図形を描いたりできます。</p>
+      <canvas id="blackboard" width="700"height="700"></canvas>
+<button onclick="clearBoard()">クリア</button>
+<button onclick="toggleEraser()">消しゴム切替</button>
+      
+    </div>
+  </div>
+
+<script>
+  const canvas = document.getElementById('blackboard');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let isErasing = false; // 消しゴムモードのフラグ
+
+ function toggleEraser() {
+  isErasing = !isErasing;
+
+  const button = document.querySelector('button[onclick="toggleEraser()"]');
+
+  if (isErasing) {
+    button.style.backgroundColor = "crimson";
+    button.style.color = "white";
+    button.textContent = "消しゴム（使用中）";
+  } else {
+    button.style.backgroundColor = "";
+    button.style.color = "";
+    button.textContent = "消しゴム切替";
+  }
+}
+
+
+  function getStrokeStyle() {
+    return isErasing ? "#222" : "white"; // 黒板色 or 白
+  }
+
+  function getLineWidth() {
+    return isErasing ? 12 : 2; // 消しゴムは太め
+  }
+
+  function drawLine(x, y) {
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = getStrokeStyle();
+    ctx.lineWidth = getLineWidth();
+    ctx.stroke();
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (drawing) drawLine(e.offsetX, e.offsetY);
+  });
+
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('mouseleave', () => drawing = false);
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    ctx.beginPath();
+    ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    drawing = true;
+  });
+
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    drawLine(touch.clientX - rect.left, touch.clientY - rect.top);
+  });
+
+  canvas.addEventListener('touchend', () => drawing = false);
+
+  function clearBoard() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+</script>
+
+</body>
+</html>
