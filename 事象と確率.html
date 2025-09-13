@@ -262,7 +262,7 @@ function generateQuiz() {
       let k=getRandomInt(0,1);
       Q=`$$ ${color[0]}${n}個，${color[1]}${m}個入った袋から，玉を1個取り出すとき，$$
       $$取り出した玉が${color[k]}である確率を求めよ。$$`;
-      q=[n,n];
+      q=[n,m];
       answer=yakubun(q[k],m+n);
       solution=`$$全部で${m+n}個ある玉のなかに，${color[k]}が${q[k]}個あるから$$
       $$\\frac{${q[k]}}{${m+n}}${q[k]===answer[0] ? ``:`=${bunsu(q[k],m+n)}`}$$`;
@@ -474,9 +474,9 @@ function generateQuiz() {
         </select>
       </label>
 <div id="question" class="question"></div>
-<input type="number" id="userInputNum"style="padding: 1em 0.3rem; font-size: 1.2rem;" placeholder="分子">
+<input type="number" id="userInputNum"style="padding: 1em 10px; font-size: 1.2rem; width: 80px;" placeholder="分子">
 <span>/</span>
-<input type="number" id="userInputDen" style="padding: 1em 0.3rem; font-size: 1.2rem;" placeholder="分母">
+<input type="number" id="userInputDen" style="padding: 1em 10px; font-size: 1.2rem; width: 80px;" placeholder="分母">
 <div>
   <button onclick="checkAnswer()"style="padding: 1em 2em; font-size: 1.2rem;">答え合わせ</button>
   <button onclick="showSolution()"style="padding: 1em 2em; font-size: 1.2rem;">解説</button>
