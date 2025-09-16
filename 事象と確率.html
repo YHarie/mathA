@@ -219,7 +219,7 @@ function generateQuiz() {
   document.getElementById('solution').textContent = '';
   let i = parseInt(document.getElementById('modeSelect').value);
 
-  if (i === 0) i = getRandomInt(1, 4);
+  if (i === 0) i = getRandomInt(1, 5);
   if(i===1){
     let m,n,p,q,j,Q;
     j=getRandomInt(1,3);
@@ -411,6 +411,41 @@ function generateQuiz() {
     $$${S[k+4]}=${bunsu(A[k],kaijo(n))}$$`;
     answer=yakubun(A[k],kaijo(n));
       }
+      if(i===5){
+        let j,m,n,Q,S,p,q;
+        n=getRandomInt(3,6);
+        m=getRandomInt(1,n-1);
+        j=getRandomInt(0,2);
+        Q=[`ちょうど${m}人だけ勝つ`,`勝負がつく`,`あいこになる`];
+        question=`$$${n}人でじゃんけんを1回するとき，$$
+        $$${Q[j]}確率を求めよ。$$`;
+        p=3**n;
+        q=[combi(n,m)*3,(2**n -2) *3,3**n -(2**n -2) *3];
+        answer=yakubun(q[j],p);
+        S=[`$$${n}人の中から，勝つ${m}人を選ぶ方法が
+         \\mathrm{_{${n}}C_{${m}}}通り，$$ $$
+         じゃんけんの手の出方が2通りである。$$ $$
+        よって，求める確率は\\frac{\\mathrm{_{${n}}C_{${m}}}\\cdot 3}{3^{${n}}}=${bunsu(q[j],p)}$$`,
+
+        `$$場に出ている手は2種類のみである。$$
+        $$その手の選び方が\\mathrm{_{${3}}C_{${2}}}通り$$
+        $$一人ひとりの手の出方が2通りあり，全員同じ手になる2通りを除くので$$
+        $$全部で手の出し方は　　\\mathrm{_{${3}}C_{${2}}}\\cdot(2^{${n}}-2)$$
+        $$よって，求める確率は\\frac{\\mathrm{_{${3}}C_{${2}}}\\cdot(2^{${n}}-2)}{3^{${n}}}=${bunsu(q[j],p)}$$`,
+
+        `$$全体の場合の数から，勝負がつく場合の数を引けばよい。$$$$
+        勝負がつく場合，場に出ている手は2種類のみである。$$$$
+        その手の選び方が\\mathrm{_{${3}}C_{${2}}}通り$$$$
+        一人ひとりの手の出方が2通りあり，全員同じ手になる2通りを除くので$$$$
+        全部で手の出し方は　　\\mathrm{_{${3}}C_{${2}}}\\cdot(2^{${n}}-2)$$$$
+        よって，求める確率は\\frac{3^{${n}}-\\mathrm{_{${3}}C_{${2}}}\\cdot(2^{${n}}-2)}{3^{${n}}}=${bunsu(q[j],p)}$$`
+
+        ];
+        solution=`$$${n}人でじゃんけんをするときの手の出し方は，全部で　3^{${n}}通りある。$$
+        $$${Q[j]}とき，$$
+         ${S[j]}`;
+
+      }
 
     document.getElementById('question').innerHTML = question;
       window.correctAnswer = answer;
@@ -470,6 +505,7 @@ function generateQuiz() {
           <option value="2">2.　２個のさいころ</option>
           <option value="3">3.　玉の取り出し方</option>
           <option value="4">4.　くじで決める並び方</option>
+          <option value="5">5.　じゃんけんの確率</option>
           <option value="0">ランダム</option>
         </select>
       </label>
