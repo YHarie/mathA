@@ -186,12 +186,16 @@ return m;
 }
 
 function parm(n,m){
-  let value=kaijo(n)/kaijo(n-m);
-  return value;
+  let value=1;
+  if(m===0){return value;}
+  else{
+  for(let i=0;i<m;i++)
+{value*=(n-i);}
+  return value;}
 }
 
 function combi(n,r){
-  let value=kaijo(n)/(kaijo(r)*kaijo(n-r));
+  let value=parm(n,r)/kaijo(r);
   return value;
 }
 
@@ -477,7 +481,7 @@ function generateQuiz() {
         answer=yakubun(p+q-r,100);
         }
         if(j===2){
-        m=getRandomInt(6,9);
+        m=getRandomInt(6,10);
         Q=[`の和が奇数になる`,`の和が偶数になる`,`の積が偶数になる`,`の積が奇数になる`,`の積が3の倍数になる`,`のうち，2枚以上が同じ番号である`];
         k=getRandomInt(0,5);
         n=((m-(m%2))/2 )*3;//偶数
