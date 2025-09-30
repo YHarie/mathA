@@ -278,7 +278,7 @@ function generateQuiz() {
       let set=[[`(1,4)`,`(2,2)`,`(4,1)`],[`(1,6)`,`(2,3)`,`(3,2)`,`(6,1)`],[`(2,6)`,`(3,4)`,`(4,3)`,`(6,2)`]];
       q=[3,4,4];
       let k=getRandomInt(0,2);
-      Q=`$$ 2個のさいころを投げるとき，出た目の積が${p[k]}になる確率を求めよ。 $$`;
+      question=`$$ 2個のさいころを投げるとき，出た目の積が${p[k]}になる確率を求めよ。 $$`;
       answer=yakubun(q[k],36);
       solution=`$$目の積が${p[k]}となる目の組み合わせは$$
       $$${set[k]}$$
@@ -290,8 +290,8 @@ function generateQuiz() {
       n=getRandomInt(3,7);
       let set=[];
       q=0;
-      Q=`$$ 2個のさいころを投げるとき，出た目の和が${n}以下になる確率を求めよ。 $$`;
-      for(i=2;i<n+1;i++){
+      question=`$$ 2個のさいころを投げるとき，出た目の和が${n}以下になる確率を求めよ。 $$`;
+      for(let i=2;i<n+1;i++){
         q+=(i-1);
         for(let k=1 ; k<7 ; k++) {
         if ((i - k) > 0 && (i - k) < 7){ set.push(`(${k},${i-k})`);}
@@ -308,7 +308,7 @@ function generateQuiz() {
     }
     if(j===3){
       n=getRandomInt(2,12);
-      Q=`$$ 2個のさいころを投げるとき，出た目の和が${n}になる確率を求めよ。 $$`;
+      question=`$$ 2個のさいころを投げるとき，出た目の和が${n}になる確率を求めよ。 $$`;
       q= n<8 ? n-1 : 13-n;
       let set=[];
       for(let k=1 ; k<7 ; k++) {
@@ -326,8 +326,8 @@ function generateQuiz() {
       n=getRandomInt(7,11);
       let set=[];
       q=0;
-      Q=`$$ 2個のさいころを投げるとき，出た目の和が${n}以上になる確率を求めよ。 $$`;
-      for(i=2;i<15-n;i++){
+      question=`$$ 2個のさいころを投げるとき，出た目の和が${n}以上になる確率を求めよ。 $$`;
+      for(let i=2;i<15-n;i++){
         q+=(i-1);
         let me=14-i;
         for(let k=1 ; k<7 ; k++) {
@@ -341,8 +341,8 @@ function generateQuiz() {
       $$\\frac{${q}}{36}${answer[0]===q ? ``:`=${bunsu(q,36)}`}$$`;
       
     }
-    question=Q;
   }
+
   if(i===3){//玉取り出し
     let j,n,m,l,p,q,r;
     j=getRandomInt(1,2);
@@ -386,6 +386,7 @@ function generateQuiz() {
      $$`;
     }
   }
+
   if(i===4){
     n=getRandomInt(3,7);
     const upperChars = Array.from({length: n}, (_, i) => String.fromCharCode(65 + i)).join(',');
@@ -410,7 +411,8 @@ function generateQuiz() {
     $$よって，求める確率は$$
     $$${S[k+4]}=${bunsu(A[k],kaijo(n))}$$`;
     answer=yakubun(A[k],kaijo(n));
-      }
+ }
+    
       if(i===5){
         let j,m,n,Q,S,p,q;
         n=getRandomInt(3,6);
