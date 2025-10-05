@@ -374,7 +374,7 @@ function generateQuiz() {
       let k=getRandomInt(0,2);
       p=combi(m+n+l,3);
       q=[combi(n,pick1)*combi(m,pick2),combi(m,3),m*n*l];
-      let tama2=[`_{${m}}\\mathrm{C}_{${pick1}}\\cdot _{${n}}\\mathrm{C}_{${pick2}}`,`_{${m}}\\mathrm{C}_{3}`,
+      let tama2=[`_{${n}}\\mathrm{C}_{${pick1}}\\cdot _{${m}}\\mathrm{C}_{${pick2}}`,`_{${m}}\\mathrm{C}_{3}`,
       `_{${n}}\\mathrm{C}_{1}\\cdot _{${m}}\\mathrm{C}_{1}\\cdot _{${l}}\\mathrm{C}_{1}`];
       question=`$$赤玉が${n}個，白玉が${m}個，青玉が${l}個入った袋から，同時に玉を3個取り出すとき，$$
      $$ ${tama[k]}が出る確率を求めよ。$$`; 
@@ -610,3 +610,4 @@ function generateQuiz() {
 
 </body>
 </html>
+
