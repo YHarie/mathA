@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>11/4 数学A課題《確率》</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+    }
+
+    #left-area, #right-area {
+      padding: 1em;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+
+    #left-area {
+      flex: 1;
+      background-color: #f9f9f9;
+      font-size: 1em;
+
+    }
+
+    #right-area {
+      flex: 1;
+      background-color: #222;
+      color: white;
+    }
+  #top {
+      height: 10vh;
+      background: #f0f0f0;
+      padding: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 1.5em;
+    }
+    #bottom {
+      height: 90vh;
+      padding: 20px;
+      overflow-y: auto;
+    }
+#soluButton {
+  background-color: orange;
+}
+#nextButton{
+  background-color: cyan;
+}
+    .input-box {
+      width: 70px;
+      height: 50px;
+      font-size: 1.5em;
+      margin: 5px;
+    }
+    .button {
+      margin: 10px;
+      padding: 10px 20px;
+      font-size: 1em;
+    }
+
+    .hidden {
+      display: none;
+    }
+.color0 { background-color: gray; color: white; }
+.color1 { background-color: blue; color: white; }
+.color2 { background-color: green; color: white; }
+.color3 { background-color: red; color: white; }
+
+         body{font-size:1.3em;}
+    @media (orientation: portrait) {
+      .container {
+        flex-direction: column;
+      }
+
+      #left-area, #right-area {
+        height: 50vh;
+      }
+
+
+    body {
+    font-size: 2em;
+  }
+
+   select, button {
+    font-size: 1.5em;
+  }
+}
+
+    .correct { color: green; }
+    .incorrect { color: red; }
+
+    #blackboard {
+      width: auto;
+      height: auto;
+      touch-action: none;
+    }
+
+  </style>
+  <script>
+let I = 0;
+let mistakeCount = 0;
+let startTime = null;
+let endTime = null;
+
+let N,an1,an2,bn1,bn2,bn3;
+N=0
+	let kaisu=1;
+    let correctAnswers = [];
+
+function startTask() {
+   const ansBtn = document.getElementById("ansButton");
+ansBtn.classList.remove("hidden"); // ボタン表示
+
+  const now = new Date();
+  startTime = now;
+  I = 1;
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("status").textContent = `現在${I}問目`;
+  generateQuestion();
+}
+
+
+ function gcd(a, b) {
+      return b === 0 ? Math.abs(a) : gcd(b, a % b);
+    }
+	function lcm(a, b) {
+	  if (a === 0 || b === 0) return 0; // どちらかが0のときは0
+	  return Math.abs(a * b) / gcd(a, b);
+	}
+ function keisu(b, variable = "") {
+      if (b === 0) return "";
+      if (b === 1) return `${variable}`;
+      if (b === -1) return `-${variable}`;
+      return `${b}${variable}`;
+    }
+
+    function moji(num, str) {
+      if (num === 0) return "";
+      if (num === 1) return `+${str}`;
+      if (num === -1) return `-${str}`;
+      return num > 0 ? `+${num}${str}` : `${num}${str}`;
+    }
+
+    function teisu(num) {
+      if (num === 0) return "";
+      return num > 0 ? `+${num}` : `${num}`;
+    }
+
+function kakko(n) {//負の数にカッコをつける
+  return n < 0 ? `(${n})` : `${n}`;
+}
+function kanyaku(n,j) {//ルートの簡約化 j=1の時は文字列，j=2の時は配列で数値を返す。[外，中]
+  if (n < 0) return `i√${-n}`; // 負の数は虚数
+  if (n === 0) return "0";
+  if (n === 1) return "1";
+
+  let outside = 1;
+  let inside = n;
+
+  for (let i = 2; i * i <= inside; i++) {
+    while (inside % (i * i) === 0) {
+      inside /= i * i;
+      outside *= i;
+    }
+  }
+if(j===1){
+ if (inside === 1) return `${outside}`;
+if (outside === 1) return `\\sqrt{${inside}}`;
+
+return `${outside}\\sqrt{${inside}}`;}
+if(j===2){
+return [outside,inside];
+
+}
+}
+
+function bunsu(s, b) {//分数表記してくれる。分母が1のときは自動的に分子だけ返す。yakubunしてから使うといいかも。
+[s,b]=yakubun(s,b);
+  if (b === 1) { return `${s}`; }
+  if (b === -1) { return `${-s}`; }
+  return s < 0 ? `-\\frac{${-s}}{${b}}` : `\\frac{${s}}{${b}}`;
+}
+
+
+function yakubun(numerator, denominator) {//約分関数。[a,b]=yakubun(a,b)のように使う。
+  if (denominator === 0) {
+    throw new Error("分母が0です");
+  }
+
+  const divisor = gcd(Math.abs(numerator), Math.abs(denominator));
+  numerator = numerator/divisor;
+  denominator = denominator/divisor;
+
+  // 分母を正にする
+  if (denominator < 0) {
+    numerator = -numerator;
+    denominator = -denominator;
+  }
+
+  return [numerator, denominator];
+}
+    function getRandomInt(min, max, excludeZero = false) {
+      let val;
+      do {
+        val = Math.floor(Math.random() * (max - min + 1)) + min;
+      } while (excludeZero && val === 0);
+      return val;
+    }
+
+function kaijo(n){
+  let m=1;
+  if(n===0)     return 1;
+  if(n<0)     return null;
+
+  for(let i=1;i<n+1;i++){
+    m*=i;
+  }
+return m;
+
+}
+
+function parm(n,m){
+  let value=kaijo(n)/kaijo(n-m);
+  return value;
+}
+
+function combi(n,r){
+  let value=parm(n,r)/kaijo(r);
+  return value;
+}
+
+function startQuiz() {
+  I = 1;
+  startTime = new Date();
+  document.getElementById("startButton").style.display = "none";
+  document.getElementById("status").textContent = `現在${I}問目`;
+  generateQuestion();
+}
+
+
+ function generateQuestion() {
+  let question = "";
+	let solution="";
+  document.getElementById("feedback").innerHTML = "";
+  document.getElementById("nextButton").classList.add("hidden");
+  const inputsDiv = document.getElementById("inputs");
+  inputsDiv.innerHTML = "";
+ const questionDiv = document.getElementById("question");
+  const solutionDiv = document.getElementById("solution");
+  const feedbackDiv = document.getElementById("feedback");
+
+
+if (I === 0) {
+    questionDiv.innerHTML = `<p>【課題の取り組み方】</p>
+    <p>解答を入力し、「答え合わせ」で確認してください。不正解なら「この問題をもう一度」で再チャレンジ！</p>
+  <p>準備ができたら「開始」ボタンを押してください。</p>
+  <p>全部で10問です。終わったらリザルト画面になります。</p>
+  <p>リザルト画面にある記録ボタンを押し，ダウンロードした画像をロイロで提出してください。</p>
+  <p>本日中に２回繰り返し，２回の記録を提出箱に提出をしてください。</p>
+  <button class="button" onclick="startTask()">開始</button>
+`;
+
+    document.getElementById("ansButton").classList.add("hidden");
+    document.getElementById("soluButton").classList.add("hidden");
+	
+
+    return;
+  }
+
+if (I === 1) {
+    let m,n,p,q,j,Q;
+    j=getRandomInt(1,3);
+    if(j===1){//トランプ
+      let mark=[`ハート`,`スペード`,`クラブ`,`ダイヤ`];
+      n=getRandomInt(2,10);
+      m=getRandomInt(0,1);
+      p=m===0 ? n:13-n+1;
+      let lg=[`以下`,`以上`];
+      let value=[`${mark[getRandomInt(0,3)]}の札`,`絵札`,`A(エース)`,`${n}${lg[m]}の札`];
+      q=[13,12,4,4*p];
+      let k=getRandomInt(0,3);
+      answer=yakubun(q[k],52);
+      
+      Q= `$$ジョーカーを除く1組のトランプ52枚の中から1枚を選ぶとき，$$
+                $$${value[k]}である確率を求めよ。$$`;
+
+      solution=`$$${value[k]}は全部で${q[k]}枚あるので，$$
+                $$求める確率は \\frac{${q[k]}}{52}
+                  ${q[k]===answer[0]?``:` = ${bunsu(answer[0],answer[1])}`}$$`;
+    
+    }
+    
+    if(j===2){
+      p=[`偶数の目`,`奇数の目`,`3の倍数`];
+      q=[3,3,2];
+      n=getRandomInt(0,2);
+      Q=`$$さいころを1個投げたとき，出た目が${p[n]}である確率を求めよ。$$`;
+      answer=yakubun(q[n],6);
+      solution=`$$
+      さいころを1個投げたときの目の出方は6通り，$$
+      $$${p[n]}の出方は${q[n]}通りであるから$$
+      $$\\frac{${q[n]}}{6}${answer[0]===q[n] ? ``:`=${bunsu(q[n],6)}`}$$`;
+
+    }
+    if(j===3){
+      n=getRandomInt(1,4);
+      m=getRandomInt(1,4);
+      let color=[`赤玉`,`白玉`];
+      let k=getRandomInt(0,1);
+      Q=`$$ ${color[0]}${n}個，${color[1]}${m}個入った袋から，玉を1個取り出すとき，$$
+      $$取り出した玉が${color[k]}である確率を求めよ。$$`;
+      q=[n,m];
+      answer=yakubun(q[k],m+n);
+      solution=`$$全部で${m+n}個ある玉のなかに，${color[k]}が${q[k]}個あるから$$
+      $$\\frac{${q[k]}}{${m+n}}${q[k]===answer[0] ? ``:`=${bunsu(q[k],m+n)}`}$$`;
+    }
+  question=`${Q}
+  $$解答欄は左から順に，分子・分母になります。$$`;
+    correctAnswers=answer;
+  // input ボックスの追加
+  inputsDiv.innerHTML = ""; // ← 前の入力を消すと安全
+  for (let i = 0; i < 2; i++) {
+    let input = document.createElement("input");
+    input.className = "input-box";
+    input.type = "number";
+    input.id = `input${i}`;
+    inputsDiv.appendChild(input);
+  }
+
+  document.getElementById("question").innerHTML = question;
+  MathJax.typesetClear();
+  MathJax.typeset();
+
+}// 4問目終わり
+
+
+if (I === 2) {
+     let m,n,p,q,j,Q;
+    j=getRandomInt(1,4);
+    if(j===1){
+      p=[4,6,12];
+      let set=[[`(1,4)`,`(2,2)`,`(4,1)`],[`(1,6)`,`(2,3)`,`(3,2)`,`(6,1)`],[`(2,6)`,`(3,4)`,`(4,3)`,`(6,2)`]];
+      q=[3,4,4];
+      let k=getRandomInt(0,2);
+      question=`$$ 2個のさいころを投げるとき，出た目の積が${p[k]}になる確率を求めよ。 $$
+      $$解答欄は左から順に，分子・分母になります。$$`;
+      answer=yakubun(q[k],36);
+      solution=`$$目の積が${p[k]}となる目の組み合わせは$$
+      $$${set[k]}$$
+      $$である。$$
+      $$さいころを2個投げたときの目の出方は全部で36通りであるから$$
+      $$\\frac{${q[k]}}{36}${answer[0]===q[k] ? ``:`=${bunsu(q[k],36)}`}$$`;
+    }    
+    if(j===2){
+      n=getRandomInt(3,7);
+      let set=[];
+      q=0;
+      question=`$$ 2個のさいころを投げるとき，出た目の和が${n}以下になる確率を求めよ。 $$
+      $$解答欄は左から順に，分子・分母になります。$$`;
+      for(let i=2;i<n+1;i++){
+        q+=(i-1);
+        for(let k=1 ; k<7 ; k++) {
+        if ((i - k) > 0 && (i - k) < 7){ set.push(`(${k},${i-k})`);}
+      }
+      set.push(`$$$$`)
+      }     
+      answer=yakubun(q,36);
+      solution=`$$ 目の和が${n}以下になるさいころの目の組み合わせは$$
+      $$ ${set} $$
+      $$である。$$
+      $$さいころを2個投げたときの目の出方は全部で36通りであるから$$
+      $$\\frac{${q}}{36}${answer[0]===q ? ``:`=${bunsu(q,36)}`}$$`;
+      
+    }
+    if(j===3){
+      n=getRandomInt(2,12);
+      question=`$$ 2個のさいころを投げるとき，出た目の和が${n}になる確率を求めよ。 $$
+      $$解答欄は左から順に，分子・分母になります。$$`;
+      q= n<8 ? n-1 : 13-n;
+      let set=[];
+      for(let k=1 ; k<7 ; k++) {
+        if ((n - k) > 0 && (n - k) < 7){ set.push(`(${k},${n-k})`);}
+      }
+      answer=yakubun(q,36);
+      solution=`$$ 目の和が${n}になるさいころの目の組み合わせは$$
+      $$ ${set} $$
+      $$である。$$
+      $$さいころを2個投げたときの目の出方は全部で36通りであるから$$
+      $$\\frac{${q}}{36}${answer[0]===q ? ``:`=${bunsu(q,36)}`}$$`;
+      
+    }
+    if(j===4){
+      n=getRandomInt(7,11);
+      let set=[];
+      q=0;
+      question=`$$ 2個のさいころを投げるとき，出た目の和が${n}以上になる確率を求めよ。 $$
+      $$解答欄は左から順に，分子・分母になります。$$`;
+      for(let i=2;i<15-n;i++){
+        q+=(i-1);
+        let me=14-i;
+        for(let k=1 ; k<7 ; k++) {
+        if ((me - k) > 0 && (me - k) < 7){ set.push(`(${k},${me-k})`);}
+      }   set.push(`$$$$`)   }
+      answer=yakubun(q,36);
+      solution=`$$ 目の和が${n}以上になるさいころの目の組み合わせは$$
+      $$ ${set} $$
+      $$である。$$
+      $$さいころを2個投げたときの目の出方は全部で36通りであるから$$
+      $$\\frac{${q}}{36}${answer[0]===q ? ``:`=${bunsu(q,36)}`}$$`;
+      
+    }
+    correctAnswers=answer;
+  // input ボックスの追加
+  inputsDiv.innerHTML = ""; // ← 前の入力を消すと安全
+  for (let i = 0; i < 2; i++) {
+    let input = document.createElement("input");
+    input.className = "input-box";
+    input.type = "number";
+    input.id = `input${i}`;
+    inputsDiv.appendChild(input);
+  }
+
+  document.getElementById("question").innerHTML = question;
+  MathJax.typesetClear();
+  MathJax.typeset();
+
+}// 4問目終わり
+
+
+if (I === 3) {let j,n,m,l,p,q,r;
+    j=getRandomInt(1,2);
+    if(j===1){
+      n=getRandomInt(2,4);
+      m=getRandomInt(2,5);
+      let tama=[`2個とも赤玉`,`2個とも白玉`,`赤玉1個と白玉1個`];
+      let k=getRandomInt(0,2);
+      p=combi(m+n,2);
+      q=[combi(n,2),combi(m,2),m*n];
+      let tama2=[`_{${n}}\\mathrm{C}_{2}`,`_{${m}}\\mathrm{C}_{2}`,`_{${n}}\\mathrm{C}_{1}\\cdot _{${m}}\\mathrm{C}_{1}`];
+     question=`$$赤玉が${n}個，白玉が${m}個入った袋から，同時に玉を2個取り出すとき，$$
+     $$ ${tama[k]}が出る確率を求めよ。$$`; 
+     answer=yakubun(q[k],p);
+     solution=`$$
+     玉の取り出し方は全部で_{${m+n}}\\mathrm{C}_{2}=${p}$$
+     $$ ${tama[k]}の取り出し方は$$
+     $$ ${tama2[k]}=${q[k]}$$
+     $$ よって，求める確率は　　\\frac{${q[k]}}{${p}}${q[k]===answer[0] ? ``:`=${bunsu(q[k],p)}`}
+     $$`;
+    }
+    if(j===2){
+      n=getRandomInt(2,4);
+      m=getRandomInt(3,5);
+      l=getRandomInt(1,2);
+      let pick1=getRandomInt(1,2);
+      let pick2=3-pick1;
+      let tama=[`赤玉${pick1}個，白玉${pick2}個`,`白玉3個`,`すべての色の玉`];
+      let k=getRandomInt(0,2);
+      p=combi(m+n+l,3);
+      q=[combi(n,pick1)*combi(m,pick2),combi(m,3),m*n*l];
+      let tama2=[`_{${m}}\\mathrm{C}_{${pick1}}\\cdot _{${n}}\\mathrm{C}_{${pick2}}`,`_{${m}}\\mathrm{C}_{3}`,
+      `_{${n}}\\mathrm{C}_{1}\\cdot _{${m}}\\mathrm{C}_{1}\\cdot _{${l}}\\mathrm{C}_{1}`];
+      question=`$$赤玉が${n}個，白玉が${m}個，青玉が${l}個入った袋から，同時に玉を3個取り出すとき，$$
+     $$ ${tama[k]}が出る確率を求めよ。$$`; 
+     answer=yakubun(q[k],p);
+     solution=`$$
+     玉の取り出し方は全部で_{${m+n+l}}\\mathrm{C}_{3}=${p}通り$$
+     $$${tama[k]}の取り出し方は${tama2[k]}=${q[k]}$$
+     $$よって求める確率は　　\\frac{${q[k]}}{${p}}${q[k]===answer[0] ? ``:`=${bunsu(q[k],p)}`}
+     $$`;
+    }
+    correctAnswers=answer;
+  // input ボックスの追加
+  inputsDiv.innerHTML = ""; // ← 前の入力を消すと安全
+  for (let i = 0; i < 2; i++) {
+    let input = document.createElement("input");
+    input.className = "input-box";
+    input.type = "number";
+    input.id = `input${i}`;
+    inputsDiv.appendChild(input);
+  }
+
+  document.getElementById("question").innerHTML = question;
+  MathJax.typesetClear();
+  MathJax.typeset();
+
+}// 4問目終わり
+if (I === 4) {
+    n=getRandomInt(3,7);
+    const upperChars = Array.from({length: n}, (_, i) => String.fromCharCode(65 + i)).join(',');
+    Q=[`左端がAである`,`両端がAとBである`,`AとBが隣り合う`,`AとBが隣り合わない`];
+    A=[kaijo(n-1),2*kaijo(n-2),kaijo(n-1)*2,kaijo(n)-kaijo(n-1)*2];
+    k=getRandomInt(0,3);
+    S=[`${n-1}!通りある。`,`左端が\\mathrm{Aの場合，Bの場合}の2通りあり，$$ $$その各々に対して残りの${n-2}人がその間に並ぶ方法が${n-2}!通りある。`,
+      `\\mathrm{A とB}を1組として考えると，${n-2}人と1組の並びが${n-1}!通りあり，$$ $$その各々に対して\\mathrm{A,B}の並び方が2通りある。`,
+      `\\mathrm{AとB}を除く${n-2}人の並び方が${n-2}!，$$$$
+      両端と${n-2}人の間，${n-1}箇所から2か所\\mathrm{AとB}を並べる場所を選べばよいので，$$$$
+      _{${n-1}}\\mathrm{P}_{2}`,
+      `\\frac{${n-1}!}{${n}!}`,`\\frac{${n-2}!\\times 2} {${n}!}`,
+      `\\frac{${n-1}!\\times 2} {${n}!}`,`\\frac{${n-2}! \\times _{${n-1}}\\mathrm{P}_{2}} {${n}!}`
+    ];
+
+    question=`$$\\mathrm{${upperChars}}の${n}人が，$$
+    $$くじ引きで順番を決めて横1列に並ぶとき，$$
+    $$\\mathrm{${Q[k]}}確率を求めよ。$$`;
+    solution=`$$ ${n}人が1列に並ぶ方法は，全部で  ${n}!通りある。$$
+    $$このうち，\\mathrm{${Q[k]}}場合は，$$
+    $$${S[k]}$$
+    $$よって，求める確率は$$
+    $$${S[k+4]}=${bunsu(A[k],kaijo(n))}$$`;
+    answer=yakubun(A[k],kaijo(n));
+    correctAnswers=answer;
+  // input ボックスの追加
+  inputsDiv.innerHTML = ""; // ← 前の入力を消すと安全
+  for (let i = 0; i < 2; i++) {
+    let input = document.createElement("input");
+    input.className = "input-box";
+    input.type = "number";
+    input.id = `input${i}`;
+    inputsDiv.appendChild(input);
+  }
+
+  document.getElementById("question").innerHTML = question;
+  MathJax.typesetClear();
+  MathJax.typeset();
+
+}// 4問目終わり
+
+if (I === 5) {  j=getRandomInt(1,4);
+    let m,n,k,p,q;
+    if(j===1){//さいころ
+      m=[3,4,6];
+      n=[[3,6,9,12],[4,8,12],[6,12]];
+      k=getRandomInt(0,2);
+      let number=n[k];
+      let length=number.length;
+      let set=[];
+      q=0;
+      question=`$$ 2個のさいころを投げるとき，出た目の和が${m[k]}の倍数になる確率を求めよ。 $$`;
+      for(let i=0;i<length;i++){
+        set.push(`$$$$目の和が${number[i]}のときは`)
+        q+=number[i]>7 ? 13-number[i] : (number[i]-1);
+        for(let l=1 ; l<7 ; l++) {
+        if ((number[i] - l) > 0 && (number[i] - l) < 7){ set.push(`(${l},${number[i]-l})`);}
+      }
+      }
+      answer=yakubun(q,36);
+      solution=`$$さいころの目の和が${m[k]}の倍数となるのは，$$
+      $$目の和が${n[k]}のときである。$$
+      $$${set}$$
+      よって求める確率は$$
+      \\frac{${q}}{36}=${bunsu(q,36)}
+      $$`;      
+      }
+      if(j===2){
+        m=getRandomInt(4,7);
+        n=getRandomInt(4,7);
+        k=getRandomInt(1,3);
+        color=[`赤玉`,`白玉`];
+        p=getRandomInt(0,1);
+        l=getRandomInt(0,1);
+        let Q=[`4個とも同じ色の玉`,`${k}個以上${color[l]}`];
+        question=`$$${color[0]}${m}個，${color[1]}${n}個入った袋の中から，
+        同時に4個の玉を取り出すとき，$$
+        $$${Q[p]}が出る確率を求めよ。$$`;
+        let A,S,sol,shiki;
+        q=0;
+        sol=``;
+        shiki=``;
+        if(l===0){
+        for(let i=k ;i<5;i++)
+      {q+=combi(m,i)*combi(n,4-i);
+       sol+=`$$${color[0]}が${i}個，${color[1]}が${4-i}個のとき$$
+       $$_{${m}}\\mathrm{C}_{${i}}\\cdot _{${n}}\\mathrm{C}_{${4-i}}通り$$`;
+       shiki+=`_{${m}}\\mathrm{C}_{${i}}\\cdot _{${n}}\\mathrm{C}_{${4-i}}`;
+       if(i<4){shiki+=`+`;}
+      }
+      }
+      if(l===1){
+        for(let i=k;i<5;i++)
+      {q+=combi(m,4-i)*combi(n,i);
+           sol+=`$$ ${color[0]}が${4-i}個，${color[1]}が${i}個のとき$$
+       $$_{${m}}\\mathrm{C}_{${4-i}}\\cdot _{${n}}\\mathrm{C}_{${i}}通り $$`;
+       shiki+=`_{${m}}\\mathrm{C}_{${4-i}}\\cdot _{${n}}\\mathrm{C}_{${i}}`;
+       if(i<4){shiki+=`+`;}
+      }
+      }
+
+        A=[combi(m,4)+combi(n,4),q]
+        S=[`${Q[0]}であるときは，4個とも赤玉,もしくは4個とも白玉のときである。$$$$
+        4個とも赤玉である場合が　_{${m}}\\mathrm{C}_{4}通り$$$$
+        4個とも白玉である場合が　_{${n}}\\mathrm{C}_{4}通り$$$$
+        よって，求める確率は　　\\frac{_{${m}}\\mathrm{C}_{4}+_{${n}}\\mathrm{C}_{4}}{_{${m+n}}\\mathrm{C}_{4}}
+        `,
+          `${Q[1]}であるときは，次の場合があり，それぞれ$$
+          ${sol}
+          $$よって，求める確率は，　　\\frac{${shiki}}{_{${m+n}}\\mathrm{C}_{4}}`
+        ];
+        answer=yakubun(A[p],combi(m+n,4));
+        solution=`$$
+        ${S[p]}=${bunsu(A[p],combi(m+n,4))}$$`;
+      }
+      if(j===3){
+        m=getRandomInt(2,4);
+        n=getRandomInt(2,4);
+        Q=[`2個の玉が同じ色`,`2個の玉が違う色`];
+        k=getRandomInt(0,1);
+        q=[combi(m,2)+combi(n,2)+1,m*n+2*m+2*n];
+        p=combi(m+n+2,2);
+        answer=yakubun(q[k],p);
+        let S;
+        question=`$$ 赤玉が${m}個，白玉が${n}個，青玉が2個入った袋の中から，$$
+        $$同時に2個の玉を取り出すとき，$$
+        $$${Q[k]}である確率を求めよ。$$`;
+        S=[`取り出された玉が$$
+        $$赤玉が2個の場合$$
+        $$_{${m}}\\mathrm{C}_{2} 通り$$
+        $$白玉が2個の場合$$
+        $$_{${n}}\\mathrm{C}_{2} 通り$$
+        $$青玉が2個の場合$$
+        $$_{2}\\mathrm{C}_{2} 通り$$
+        $$よって，求める確率は　　\\frac{_{${m}}\\mathrm{C}_{2} + _{${n}}\\mathrm{C}_{2}+_{${2}}\\mathrm{C}_{2} }{_{${m+n+2}}\\mathrm{C}_{2} }`,
+      `取り出された玉が$$
+      $$赤玉1個，白玉1個の場合$$
+      $$_{${m}}\\mathrm{C}_{1}\\cdot _{${n}}\\mathrm{C}_{1}通り$$ 
+            $$白玉1個，青玉1個の場合$$
+      $$_{${n}}\\mathrm{C}_{1}\\cdot _{${2}}\\mathrm{C}_{1}通り$$
+            $$青玉1個，赤玉1個の場合$$
+      $$_{${2}}\\mathrm{C}_{1}\\cdot _{${m}}\\mathrm{C}_{1}通り$$
+      $$よって，求める確率は　　\\frac{_{${m}}\\mathrm{C}_{1}\\cdot _{${n}}\\mathrm{C}_{1}+_{${n}}\\mathrm{C}_{1}\\cdot _{${2}}\\mathrm{C}_{1}+ _{${2}}\\mathrm{C}_{1}\\cdot _{${m}}\\mathrm{C}_{1}}{_{${m+n+2}}\\mathrm{C}_{2} }`]
+        solution=`$$ ${Q[k]}であるのは，次の3つの場合である。$$
+        $$${S[k]}$$
+        $$=${bunsu(q[k],p)}$$
+
+        `;
+      }
+      if(j===4){
+        m=getRandomInt(3,5);
+        n=getRandomInt(6,10);
+        let sum=m+n;
+        k=getRandomInt(0,1);
+        let a=getRandomInt(3,5);
+        let Q=[`製品が${sum}個あり，そのうち${m}個が不良品である。$$
+        $$この${sum}個の中から，${a}個を同時に取り出すとき，$$
+        $$不良品が2個以上含まれる確率を求めよ。`,
+      `${sum}本中あたりが${m}本入ったくじから同時に${a}本引くとき$$
+      $$あたりを2本以上ひく確率を求めよ。`];
+      p=combi(sum,a);
+      question=`$$${Q[k]}$$`;
+      q=0;
+      let S=[``,``];
+      let num=``;
+      let least= m>a ? a: m;
+      for(let i=2;i<least+1;i++){
+        q+=combi(m,i)*combi(n,a-i);
+        S[0]+=`不良品が${i}個含まれるとき$$
+        $$ _{${m}}\\mathrm{C}_{${i}}\\cdot _{${n}}\\mathrm{C}_{${a-i}}$$$$`;
+        S[1]+=`あたりが${i}本含まれるとき$$
+        $$ _{${m}}\\mathrm{C}_{${i}}\\cdot _{${n}}\\mathrm{C}_{${a-i}}$$$$`;
+        num+=`_{${m}}\\mathrm{C}_{${i}}\\cdot _{${n}}\\mathrm{C}_{${a-i}}`;
+        if(i<least ){num+=`+`;}
+      }
+      answer=yakubun(q,p);
+      solution=`$$ 求める確率は以下の場合に分けられる。$$
+      $$${S[k]}$$
+      $$よって，求める確率は　　\\frac{ ${num} }{ _{ ${sum} } \\mathrm{ C } _{ ${a} } }$$
+      $$=${bunsu(q,p)}$$`;
+
+      }
+      correctAnswers=answer;
+  // input ボックスの追加
+  inputsDiv.innerHTML = ""; // ← 前の入力を消すと安全
+  for (let i = 0; i < 2; i++) {
+    let input = document.createElement("input");
+    input.className = "input-box";
+    input.type = "number";
+    input.id = `input${i}`;
+    inputsDiv.appendChild(input);
+  }
+
+  document.getElementById("question").innerHTML = question;
+  MathJax.typesetClear();
+  MathJax.typeset();
+
+}// 4問目終わり
+
+if (I === 6) {  j=getRandomInt(2,4);
+    let m,n,k,p,q;
+      if(j===2){//余事象
+        m=getRandomInt(4,7);
+        n=getRandomInt(4,7);
+        color=[`赤玉`,`白玉`];
+        l=getRandomInt(0,1);
+        question=`$$${color[0]}${m}個，${color[1]}${n}個入った袋の中から，
+        同時に4個の玉を取り出すとき，$$
+        $$少なくとも1個は${color[l]}が出る確率を求めよ。$$`;
+       p=combi(m+n,4);
+       let A=[n,m];
+       q=p-combi(A[l],4);
+        answer=yakubun(q,p);
+        solution=`$$
+        「4個の玉のうち，少なくとも1個は${color[l]}である」という事象は，$$
+        $$「4個の玉のすべてが${color[(l+1)%2]}である」という事象の余事象である。$$
+        $$すべて${color[(l+1)%2]}である確率は　\\frac{ _{${A[l]}}\\mathrm{C}_{4} }{ _{${m+n}}\\mathrm{C}_{4} }=${bunsu(combi(A[l],4),combi(m+n,4))}$$
+        $$よって，求める確率は　　1-${bunsu(combi(A[l],4),combi(m+n,4))}=${bunsu(q,p)}
+        $$`;
+      }
+      if(j===3){
+        m=getRandomInt(3,4);
+        n=getRandomInt(3,5);
+         color=[`赤玉`,`白玉`];
+        l=getRandomInt(0,1);
+        Q=[`2色の玉が取り出される`,`1個は${color[l]}である`];
+        let A=[n,m];
+        k=getRandomInt(0,1);
+        p=combi(m+n+2,3)
+        q=[combi(m,3)+combi(n,3),combi(A[l]+2,3)];
+        answer=yakubun(p-q[k],p);
+        question=`$$ 赤玉が${m}個，白玉が${n}個，青玉が2個入った袋の中から，$$
+        $$同時に3個の玉を取り出すとき，$$
+        $$少なくとも${Q[k]}である確率を求めよ。$$`;
+        let S=[`「取り出した玉の色が同じである」という事象の余事象である。$$
+        $$取り出した玉の色が同じである確率は　\\frac{_{${m}}\\mathrm{C}_{3}+_{${n}}\\mathrm{C}_{3}}{_{${m+n+2}}\\mathrm{C}_{3}}=${bunsu(q[k],p)}`
+        ,`
+        「取り出した玉が${color[(l+1)%2]}または青玉である」という事象の余事象である。$$
+        $$取り出した玉が${color[(l+1)%2]}または青玉である確率は　　\\frac{_{${A[l]}+2}\\mathrm{C}_{3}}{_{${m+n+2}}\\mathrm{C}_{3}}=${bunsu(q[k],p)}
+        `]
+
+        solution=`$$ 「少なくとも${Q[k]}である」という事象は$$
+                $$${S[k]}$$
+        $$よって，求める確率は　1-${bunsu(q[k],p)}=${bunsu(p-q[k],p)}$$
+
+        `;
+      }
+      if(j===4){
+        m=getRandomInt(3,5);
+        n=getRandomInt(6,10);
+        let sum=m+n;
+        k=getRandomInt(0,1);
+        let a=getRandomInt(3,5);
+        let Q=[`製品が${sum}個あり，そのうち${m}個が不良品である。$$
+        $$この${sum}個の中から，${a}個を同時に取り出すとき，$$
+        $$少なくとも1個は不良品が含まれる確率を求めよ。`,
+      `${sum}本中あたりが${m}本入ったくじから同時に${a}本引くとき$$
+      $$少なくともあたりを1本ひく確率を求めよ。`];
+      p=combi(sum,a);
+      question=`$$${Q[k]}$$`;
+      q=combi(n,a);
+      let S=[`「${a}個のうち，少なくとも1個は不良品である」という事象は$$$$
+      「${a}個とも不良品じゃない」という事象の余事象である。$$$$
+      ${a}個とも不良品じゃない確率は　　\\frac {_{${n}} \\mathrm{C}_{${a}} } { _{${sum}} \\mathrm{C}_{${a}} }=${bunsu(q,p)}$$$$
+      よって，求める確率は　　1-${bunsu(q,p)}=${bunsu(p-q,p)}`,
+      `「${a}本のうち，少なくとも1本はあたりである」という事象は$$$$
+      「${a}本ともはずれくじである」という事象の余事象である。$$$$
+      ${a}本ともはずれる確率は　　\\frac {_{${n}} \\mathrm{C}_{${a}}} {_{${sum}} \\mathrm{C}_{${a}}}=${bunsu(q,p)}$$$$
+      よって，求める確率は　　1-${bunsu(q,p)}=${bunsu(p-q,p)}`];
+      answer=yakubun(p-q,p);
+      solution=`$$ ${S[k]}$$;`;
+
+      }
+      correctAnswers=answer;
+  // input ボックスの追加
+  inputsDiv.innerHTML = ""; // ← 前の入力を消すと安全
+  for (let i = 0; i < 2; i++) {
+    let input = document.createElement("input");
+    input.className = "input-box";
+    input.type = "number";
+    input.id = `input${i}`;
+    inputsDiv.appendChild(input);
+  }
+
+  document.getElementById("question").innerHTML = question;
+  MathJax.typesetClear();
+  MathJax.typeset();
+
+}// 4問目終わり
+
+if (I === 7) {
+        let j=getRandomInt(1,2);
+        let m,n,l,p,q,r,Q;
+        if(j===1){
+          let set=[4,5,6,9,7];
+          m=set[getRandomInt(0,4)];
+          do{n=set[getRandomInt(0,4)];}while(m===n)
+        [m,n]=m>n ?[n,m]:[m,n];
+        p=(100-100%m)/m;
+        q=(100-100%n)/n;
+        l=m*n/gcd(m,n);
+        r=(100-100%l)/l;
+        let cap;
+        if( r>3) {cap= `\\{${l}\\cdot 1，${l}\\cdot 2，${l}\\cdot 3，\\cdots \\cdots， ${l}\\cdot ${r}\\}`;}
+        else{cap=`\\{`;
+          for(let k=1;k<1+r;k++)
+        {cap+=`${l}\\cdot ${k}`;
+          if(k<r){cap+=`，`;}
+        }
+        cap+=`\\}`;
+        }
+        question=`$$1から100までの番号がついた100枚のカードの中から1枚を取り出すとき，$$
+        $$その番号が${m}の倍数または${n}の倍数である確率を求めよ。$$`;
+        solution=`$$取り出したカードの番号が${m}の倍数である事象をA，$$
+        $$${n}の倍数である事象をBとすると，$$
+        $$取り出したカードの番号が${m}の倍数または${n}の倍数であるということは$$
+        $$A\\cup B　である。ここで$$
+        $$A=\\{ ${m}\\cdot 1，${m}\\cdot 2，${m}\\cdot 3，\\cdots \\cdots ，${m}\\cdot ${p} \\}$$
+        $$B=\\{${n}\\cdot 1，${n}\\cdot 2，${n}\\cdot 3，\\cdots \\cdots ，${n}\\cdot ${q}\\}$$
+        $$A\\cap B=${cap}$$
+        $$であるから，$$
+        $$n(A)=${p}，n(B)=${q}，n(A\\cap B)=${r}$$
+        $$また，全事象をUとすると　n(U)=100$$
+        $$よって，P(A)=\\frac{${p}}{100}，P(B)=\\frac{${q}}{100}，P(A\\cap B)=\\frac{${r}}{100}$$
+        $$ゆえに，求める確率は　$$
+        $$P(A\\cup B)=P(A)+P(B)-P(A\\cap B)=${bunsu(p+q-r,100)}$$`;
+        answer=yakubun(p+q-r,100);
+        }
+        if(j===2){
+        m=getRandomInt(6,10);
+        Q=[`の和が奇数になる`,`の和が偶数になる`,`の積が偶数になる`,`の積が奇数になる`,`の積が3の倍数になる`,`のうち，2枚以上が同じ番号である`];
+        k=getRandomInt(0,5);
+        n=((m-(m%2))/2 )*3;//偶数
+        l=m*3-n;//奇数
+        r=m*3;
+        A=[combi(l,3)+ (combi(l,1)*combi(n,2) ), combi(n,3)+(combi(l,2)*combi(n,1) ),
+        combi(m*3,3)-combi(l,3) ,combi(l,3) ,combi(m*3,3)-combi(2*m+(m%3),3) ,combi(m*3,3)-combi(m,3)*3*3*3];
+
+        S=[`取り出した番号が「すべて奇数」という事象か「奇数が1枚，偶数が2枚」という事象のどちらかである。  $$
+        $$「すべて奇数」である確率は\\frac{_{${l}}\\mathrm{C}_{3}}{_{${m*3}}\\mathrm{C}_{${3}}}$$
+          $$「奇数が1枚，偶数が2枚」である確率は，\\frac {_{${l}}\\mathrm{C}_{1} \\cdot _{${n}}\\mathrm{C}_{2} } { _{${m*3}}\\mathrm{C}_{3} }$$
+          $$よって，求める確率は，\\frac{_{${l}}\\mathrm{C}_{3}}{_{${m*3}}\\mathrm{C}_{${3}}}+\\frac {_{${l}}\\mathrm{C}_{1} \\cdot _{${n}}\\mathrm{C}_{2} } { _{${m*3}}\\mathrm{C}_{3} }=
+        `,
+      `取り出した番号が「すべて偶数」という事象か「奇数が2枚，偶数が1枚」という事象のどちらかである。  $$
+        $$「すべて偶数」である確率は\\frac{_{${n}}\\mathrm{C}_{3}}{_{${m*3}}\\mathrm{C}_{${3}}}$$
+          $$「奇数が2枚，偶数が1枚」である確率は，\\frac {_{${l}}\\mathrm{C}_{2} \\cdot _{${n}}\\mathrm{C}_{1} } { _{${m*3}}\\mathrm{C}_{3} }$$
+          $$よって，求める確率は\\frac{ _{${n}}\\mathrm{C}_{3}}{_{${m*3}}\\mathrm{C}_{${3}} }+\\frac {_{${l}}\\mathrm{C}_{2} \\cdot _{${n}}\\mathrm{C}_{1} } { _{${m*3}}\\mathrm{C}_{3} }=
+        `,
+        `取り出した番号が「少なくとも1枚は偶数」と同じ事象である。$$
+        $$ 「少なくとも1枚は偶数」の余事象は「3枚とも奇数である」という事象であり，その確率は$$
+        $$\\frac{_{${l}}\\mathrm{C}_{3}}{_{${m*3}}\\mathrm{C}_{${3}}}$$
+        $$よって，求める確率は　　1-\\frac{_{${l}}\\mathrm{C}_{3}}{_{${m*3}}\\mathrm{C}_{${3}}}=`,
+        ` 取り出した番号が「3枚とも奇数である」という事象である。$$
+        $$　よって，求める確率は　　\\frac{_{${l}}\\mathrm{C}_{3}}{_{${m*3}}\\mathrm{C}_{${3}}}=`,
+        `取り出した番号が「少なくとも1枚は3の倍数」と同じ事象である。$$
+        $$  「少なくとも1枚は3の倍数」の余事象は「3枚とも3の倍数ではない」という事象であり，その確率は$$
+        $$　\\frac{ _{${m*2+(m%3)}}\\mathrm{C}_{3} } {_{${m*3}}\\mathrm{C}_{3}}$$
+        $$よって，求める確率は　　1-\\frac{ _{${m*2+(m%3)}}\\mathrm{C}_{3} } {_{${m*3}}\\mathrm{C}_{3}}=
+        `,
+        `「すべての番号が異なる」事象の余事象である。$$
+        $$すべての番号が異なる数の組み合わせは _{${m}}\\mathrm{C}_{3} 通り，それぞれの数に対して3
+        通りの引き方があるので，その確率は$$
+        $$ \\frac{ _{${m}}\\mathrm{C}_{3}\\cdot 3^{3} } {_{${m*3}}\\mathrm{C}_{3}}$$
+        $$よって，求める確率は　　1-\\frac{ _{${m}}\\mathrm{C}_{3}\\cdot 3^{3} } {_{${m*3}}\\mathrm{C}_{3}}=`
+      ];
+        question=`$$1から${m}までの番号を付けたカードが各数3枚ずつある。$$
+        $$このカードから同時に3枚を取り出すとき，$$
+        $$取り出した3枚の番号${Q[k]}確率を求めよ。$$`;          
+        solution=`$$取り出した3枚の番号${Q[k]}のは$$
+        $$ ${S[k]}${bunsu(A[k],combi(3*m,3))}
+        $$`;
+        answer=yakubun(A[k],combi(r,3));
+        }
+        correctAnswers=answer;
+  
+  // input ボックスの追加
+  inputsDiv.innerHTML = ""; // ← 前の入力を消すと安全
+    for (let i = 0; i < 2; i++) {
+    let input = document.createElement("input");
+    input.className = "input-box";
+    input.type = "number";
+    input.id = `input${i}`;
+    inputsDiv.appendChild(input);
+  }
+
+  document.getElementById("question").innerHTML = question;
+  MathJax.typesetClear();
+  MathJax.typeset();
+
+}// 4問目終わり
+
+if (I === 8) {let m,n,P,k;
+    j=getRandomInt(1,3);
+    if(j===1){
+    m=getRandomInt(2,5);
+    n=[`${m}以下の目`,`素数の目`,`偶数`,`奇数`,`3の倍数`];
+    P=[m,3,3,3,2];
+    k=[,];
+    k[0]=getRandomInt(0,4);
+    do{k[1]=getRandomInt(0,4);}while(k[0]===k[1])
+    question=`$$ 1個のさいころを2回続けて投げるとき，1回目は${n[k[0]]}$$
+    $$2回目は${n[k[1]]}が出る確率を求めよ$$`;
+    answer=yakubun(P[k[0]]*P[k[1]],6*6);
+    solution=`$$ さいころを振って${n[k[0]]}が出る確率は　　\\frac{${P[k[0]]}}{6}=${bunsu(P[k[0]],6)}$$
+    $$同様に${n[k[1]]}が出る確率は　　\\frac{${P[k[1]]}}{6}=${bunsu(P[k[1]],6)}$$
+    $$それぞれの試行は独立であるから，求める確率は　
+    ${bunsu(P[k[0]],6)}\\times ${bunsu(P[k[1]],6)}=${bunsu(answer[0],answer[1])}$$`;
+    }
+    if(j===2){
+      m=getRandomInt(1,3)*2;
+      n=getRandomInt(2,6);
+      let color=[`赤`,`白`];
+      k=getRandomInt(2,4);
+      let p,s;
+      p=[``,`${k}回目に初めて赤玉が出る`,`${k}回目に初めて白玉が出る`];
+      for(let i=0;i<k;i++)
+    {p[0]+=`${color[i%2]}`;}
+    p[0]+=`の順に出る`;
+    s=getRandomInt(0,2);
+    question=`$$ 赤玉${m}個と白玉${n}個入った袋から玉を1個取り出し， $$
+    $$ 色を確認してから元に戻す試行を${k}回繰り返すとき$$ 
+    $$ ${p[s]} 確率を求めよ。$$`;
+
+      P=[m**((k-(k%2))/2+(k%2))*n**((k-(k%2))/2),n**(k-1) *m,m**(k-1) *n];
+      answer=yakubun(P[s],(m+n)**k);
+      let S=[``,``,``];
+      let Pn=[`\\frac{${m}}{${m+n}}`,`\\frac{${n}}{${m+n}}`];
+      for(let i=1;i<k;i++){
+                S[0]+=`${Pn[(i-1)%2]}\\cdot`;
+        S[1]+=`${Pn[1]}\\cdot`;
+        S[2]+=`${Pn[0]}\\cdot`;
+      }
+      S[0]+=`${Pn[(k-1)%2]}`;
+      S[1]+=`${Pn[0]}`;
+        S[2]+=`${Pn[1]}`;
+        solution=`$$ 赤玉が出る確率が\\frac{${m}}{${m+n}}， 白玉が出る確率が\\frac{${n}}{${n+m}}で$$
+      $$ それぞれの試行は独立であるから，求める確率は $$
+      $$ ${S[s]}=${bunsu(P[s],(m+n)**k)}$$`;
+      
+    }
+    if(j===3){
+      m=[getRandomInt(1,3)*2,getRandomInt(1,3)*2-1];
+      n=[getRandomInt(2,6),getRandomInt(1,3)*2];
+      let color=[`赤`,`白`];
+      let p=[`取り出した玉の色が異なる`,`取り出した玉の色が同じ`];
+      k=getRandomInt(0,1);
+      question=`$$ 袋\\mathrm{A}には赤玉${m[0]}個，白玉${m[1]}個$$
+      $$ 袋\\mathrm{B}には赤玉${n[0]}個，白玉${n[1]}個入っている。$$
+      $$袋\\mathrm{A，B}から玉を1個ずつ取り出すとき，$$
+      $$${p[k]}確率を求めよ。$$`;
+      P=[m[0]*n[1]+m[1]*n[0],m[0]*n[0]+m[1]*n[1]];
+      answer=yakubun(P[k],(m[0]+m[1])*(n[0]+n[1]));
+      let S=[`[1]　\\mathrm{Aから赤玉，Bから白玉を取り出す}$$$$
+      [2]　\\mathrm{Aから白玉，Bから赤玉を取り出す}$$$$
+      `,
+      `[1]　2個とも赤玉　　[2]　2個とも白玉`];
+      solution=`$$
+      袋\\mathrm{A}から玉を1個取り出す試行と，$$$$
+      袋\\mathrm{B}から玉を1個取り出す試行は独立である。$$$$
+      ${p[k]}という事象は，2つの事象$$$$
+      ${S[k]}$$$$
+      の和事象であり，これらの事象は互いに排反である。$$$$
+      $$$$
+      [1]　\\mathrm{A}から${color[0]}玉を取り出す確率は\\frac{${m[0]}}{${m[0]+m[1]} }，$$$$
+      \\mathrm{B}から${color[(1+k)%2]}玉を取り出す確率は\\frac{${n[(1+k)%2]}}{${n[0]+n[1]}}$$$$
+      よって，[1]の場合の確率は　　\\frac{${m[0]}}{${m[0]+m[1]}}\\cdot \\frac{${n[(1+k)%2]}}{${n[0]+n[1]}}
+      =\\frac{${m[0]*n[(1+k)%2]}}{${(m[0]+m[1])*(n[0]+n[1])}}$$$$
+      [2]　[1]　と同様にして，計算すると$$$$
+      　　\\frac{${m[1]}}{${m[0]+m[1]}}\\cdot \\frac{${n[(k)%2]}}{${n[0]+n[1]}}
+      =\\frac{${m[1]*n[(k)%2]}}{${(m[0]+m[1])*(n[0]+n[1])}}$$$$
+      したがって，求める確率は$$$$
+      \\frac{${m[0]*n[(1+k)%2]}}{${(m[0]+m[1])*(n[0]+n[1])}}+\\frac{${m[1]*n[(k)%2]}}{${(m[0]+m[1])*(n[0]+n[1])}}=${bunsu(answer[0],answer[1])}
+      $$`;}
+correctAnswers=answer;
+  
+  // input ボックスの追加
+  inputsDiv.innerHTML = ""; // ← 前の入力を消すと安全
+    for (let i = 0; i < 2; i++) {
+    let input = document.createElement("input");
+    input.className = "input-box";
+    input.type = "number";
+    input.id = `input${i}`;
+    inputsDiv.appendChild(input);
+  }
+
+  document.getElementById("question").innerHTML = question;
+  MathJax.typesetClear();
+  MathJax.typeset();
+
+}// 4問目終わり
+
+
+if (I === 9) {
+        let n,k,l,p,P;
+        let j=getRandomInt(1,3);
+        if(j===1){//コイン
+        n=getRandomInt(3,8);
+        k=getRandomInt(2,n-1);
+        p=[`表`,`裏`];
+        l=getRandomInt(0,1);
+        question=`$$1枚の硬貨を${n}回投げるとき，${p[l]}がちょうど${k}回出る確率を求めよ。$$`;
+        answer=yakubun(combi(n,k),2**n);
+        solution=`$$1回投げて${p[l]}が出る確率は${bunsu(1,2)}であるから$$
+        $$ _{${n}}\\mathrm{C}_{${k}}\\left(\\frac{1} {2}\\right)^{${k}}\\left(1-\\frac{1}{2}\\right)^{${n}-${k}}=${bunsu(answer[0],answer[1])}$$`;  
+        }
+          if(j===2){//さいころ
+        n=getRandomInt(3,6);
+        k=getRandomInt(2,n-1);
+        let m=getRandomInt(2,5);
+        P=[`奇数の目`,`偶数の目`,`3の倍数の目`,`${m}の目`,`${m}以下の目`];
+        p=[3,3,2,1,m];
+        l=getRandomInt(0,4);
+        question=`$$1個のさいころを${n}回投げるとき，$$
+        $$${P[l]}がちょうど${k}回出る確率を求めよ。$$`;
+        answer=yakubun(combi(n,k)* p[l]**k *(6-p[l])**(n-k),6**n);
+        solution=`$$1回投げて${P[l]}が出る確率は\\frac{${p[l]}}{6}であるから$$
+        $$ _{${n}}\\mathrm{C}_{${k}}\\left(\\frac{${p[l]}} {6}\\right)^{${k}}\\left(1-\\frac{${p[l]}}{6}\\right)^{${n}-${k}}=${bunsu(answer[0],answer[1])}$$`;  
+        }
+        if(j===3){//玉
+        n=getRandomInt(3,6);
+        k=getRandomInt(2,n-1);
+        let r,w;
+        r=getRandomInt(1,4);
+        w=getRandomInt(1,4);
+        P=[`赤玉`,`白玉`];
+        p=[r,w];
+        l=getRandomInt(0,1);
+        question=`$$ 白玉${w}個，赤玉${r}個入っている袋から玉を1個取り出し，$$
+        $$色を調べてから元に戻す。この試行を${n}回繰り返すとき，${P[l]}がちょうど $$
+        $$${k}回出る確率を求めよ$$`;
+        answer=  yakubun(combi(n,k)*(p[l]**k) *(p[(l+1)%2]**(n-k)),(r+w)**n);
+        solution=`$$玉を1回取り出して${P[l]}が出る確率は\\frac{${p[l]}}{${r+w}}であるから$$
+        $$ _{${n}}\\mathrm{C}_{${k}}\\left(\\frac{${p[l]}} {${r+w}}\\right)^{${k}}\\left(1-\\frac{${p[l]}}{${r+w}}\\right)^{${n}-${k}}=${bunsu(answer[0],answer[1])}$$`;  
+        }
+correctAnswers=answer;
+  
+  // input ボックスの追加
+  inputsDiv.innerHTML = ""; // ← 前の入力を消すと安全
+    for (let i = 0; i < 2; i++) {
+    let input = document.createElement("input");
+    input.className = "input-box";
+    input.type = "number";
+    input.id = `input${i}`;
+    inputsDiv.appendChild(input);
+  }
+
+  document.getElementById("question").innerHTML = question;
+  MathJax.typesetClear();
+  MathJax.typeset();
+
+}// 4問目終わり
+
+if (I === 10) {
+        let n,k,l,p,P;
+        let j=getRandomInt(1,6);
+        if(j===1){//コイン
+        n=getRandomInt(3,8);
+        k=getRandomInt(2,n-1);
+        p=[`表`,`裏`];
+        l=getRandomInt(0,1);
+        question=`$$1枚の硬貨を${n}回投げるとき，${p[l]}が${n-1}回以上出る確率を求めよ。$$`;
+        answer=yakubun(n+1,2**n);
+        solution=`$$1回投げて${p[l]}が出る確率は${bunsu(1,2)}である。$$
+        $$${p[l]}が${n-1}回以上出るのは，${p[l]}がちょうど${n-1}回出る$$
+        $$または，${p[l]}が${n}回出る場合であり，これらの事象は互いに排反である。$$
+        $$よって，求める確率は$$
+        $$ _{${n}}\\mathrm{C}_{${k}} \\left( \\frac{1} {2}\\right )^{${n-1}} \\left(1-\\frac{1}{2}\\right)^{${n}-${n-1}}
+        +\\left(\\frac{1} {2}\\right)^{${n}}=${bunsu(answer[0],answer[1])}$$`;  
+        }
+          if(j===2){//さいころ
+        n=getRandomInt(3,6);
+        k=n-1;
+        let m=getRandomInt(2,5);
+        P=[`奇数の目`,`偶数の目`,`3の倍数の目`,`${m}の目`,`${m}以下の目`];
+        p=[3,3,2,1,m];
+        l=getRandomInt(0,4);
+        question=`$$1個のさいころを${n}回投げるとき，$$
+        $$${P[l]}が${k}回以上出る確率を求めよ。$$`;
+        answer=yakubun(combi(n,k)* p[l]**k *(6-p[l])**(n-k)+p[l]**n,6**n);
+        solution=`$$1回投げて${P[l]}が出る確率は\\frac{${p[l]}}{6}である。$$
+        $$ ${P[l]}が${k}回以上出るのは，${P[l]}がちょうど${k}回出る場合と$$
+        $$${P[l]}が${n}回出るばあいであり，これらの事象は互いに排反である。$$
+        $$よって，求める確率は$$
+        $$ _{${n}}\\mathrm{C}_{${k}}\\left(\\frac{${p[l]}} {6}\\right)^{${k}}\\left(1-\\frac{${p[l]}}{6}\\right)^{${n}-${k}}
+        +\\left(\\frac{${p[l]}} {6}\\right)^{${n}}=${bunsu(answer[0],answer[1])}$$`;  
+        }
+        if(j===3){//玉
+        n=getRandomInt(3,6);
+        k=n-1;
+        let r,w;
+        r=getRandomInt(1,4);
+        w=getRandomInt(1,4);
+        P=[`赤玉`,`白玉`];
+        p=[r,w];
+        l=getRandomInt(0,1);
+        question=`$$ 白玉${w}個，赤玉${r}個入っている袋から玉を1個取り出し，$$
+        $$色を調べてから元に戻す。この試行を${n}回繰り返すとき，${P[l]}が$$
+        $$${k}回以上出る確率を求めよ$$`;
+        answer=  yakubun(combi(n,k)*(p[l]**k) *(p[(l+1)%2]**(n-k))+p[l]**n,(r+w)**n);
+        solution=`$$玉を1回取り出して${P[l]}が出る確率は\\frac{${p[l]}}{${r+w}}である。$$
+        $$ ${P[l]}が${k}回以上出るのは，${P[l]}がちょうど${k}回出る場合と$$
+        $$${P[l]}が${n}回出るばあいであり，これらの事象は互いに排反である。$$
+        $$よって，求める確率は$$
+        $$ _{${n}}\\mathrm{C}_{${k}}\\left(\\frac{${p[l]}} {${r+w}}\\right)^{${k}}\\left(1-\\frac{${p[l]}}{${r+w}}\\right)^{${n}-${k}}
+        +\\left(\\frac{${p[l]}} {${r+w}}\\right)^{${n}}=${bunsu(answer[0],answer[1])}$$`;  
+        }
+        if(j===4){//コイン
+        n=getRandomInt(3,8);
+        k=getRandomInt(2,n-1);
+        p=[`表`,`裏`];
+        l=getRandomInt(0,1);
+        question=`$$1枚の硬貨を${n}回投げるとき，${n}回目に${k}回目の${p[l]}が出る確率を求めよ。$$`;
+        answer=yakubun(combi(n-1,k-1),2**n);
+        solution=`$$1回投げて${p[l]}が出る確率は${bunsu(1,2)}である。$$
+        $$${n-1}回目までに${p[l]}がちょうど${k-1}回出て，${n}回目に${k}回目の${p[l]}が出ればよいから$$
+        $$求める確率は$$
+        $$ _{${n-1}}\\mathrm{C}_{${k-1}} \\left( \\frac{1} {2}\\right )^{${k-1}} \\left(1-\\frac{1}{2}\\right)^{${n-1}-${k-1}}
+        \\times\\frac{1} {2}=${bunsu(answer[0],answer[1])}$$`;  
+        }
+          if(j===5){//さいころ
+        n=getRandomInt(3,6);
+        k=getRandomInt(2,n-1);
+        let m=getRandomInt(2,5);
+        P=[`奇数の目`,`偶数の目`,`3の倍数の目`,`${m}の目`,`${m}以下の目`];
+        p=[3,3,2,1,m];
+        l=getRandomInt(0,4);
+        question=`$$1個のさいころを${n}回投げるとき，$$
+        $$${n}回目に${k}回目の${P[l]}が出る確率を求めよ。$$`;
+        answer=yakubun(combi(n-1,k-1)* p[l]**k *(6-p[l])**(n-k),6**n);
+        solution=`$$1回投げて${P[l]}が出る確率は\\frac{${p[l]}}{6}である。$$
+        $$ ${n-1}回目までに${k-1}回目の${P[l]}が出て，${n}回目に${k}回目の${P[l]}が出ればよい。$$
+        $$よって，求める確率は$$
+        $$ _{${n-1}}\\mathrm{C}_{${k-1}}\\left(\\frac{${p[l]}} {6}\\right)^{${k-1}}\\left(1-\\frac{${p[l]}}{6}\\right)^{${n-1}-${k-1}}
+        \\times \\frac{${p[l]}} {6}=${bunsu(answer[0],answer[1])}$$`;  
+        }
+        if(j===6){//玉
+        n=getRandomInt(3,6);
+        k=getRandomInt(2,n-1);
+        let r,w;
+        r=getRandomInt(1,4);
+        w=getRandomInt(1,4);
+        P=[`赤玉`,`白玉`];
+        p=[r,w];
+        l=getRandomInt(0,1);
+        question=`$$ 白玉${w}個，赤玉${r}個入っている袋から玉を1個取り出し，$$
+        $$色を調べてから元に戻す。この試行を${n}回繰り返すとき，$$
+        $$${n}回目に${k}回目の${P[l]}が出る確率を求めよ$$`;
+        answer=  yakubun(combi(n-1,k-1)*(p[l]**k) *(p[(l+1)%2]**(n-k)),(r+w)**n);
+        solution=`$$玉を1回取り出して${P[l]}が出る確率は\\frac{${p[l]}}{${r+w}}である。$$
+       $$ ${n-1}回目までに${k-1}回目の${P[l]}が出て，${n}回目に${k}回目の${P[l]}が出ればよい。$$
+        $$よって，求める確率は$$
+        $$ _{${n-1}}\\mathrm{C}_{${k-1}}\\left(\\frac{${p[l]}} {${r+w}}\\right)^{${k-1}}\\left(1-\\frac{${p[l]}}{${r+w}}\\right)^{${n-1}-${k-1}}
+        \\times\\frac{${p[l]}} {${r+w}}=${bunsu(answer[0],answer[1])}$$`;  
+        }
+
+correctAnswers=answer;
+ 
+  // input ボックスの追加
+  inputsDiv.innerHTML = ""; // ← 前の入力を消すと安全
+    for (let i = 0; i < 2; i++) {
+    let input = document.createElement("input");
+    input.className = "input-box";
+    input.type = "number";
+    input.id = `input${i}`;
+    inputsDiv.appendChild(input);
+  }
+
+  document.getElementById("question").innerHTML = question;
+  MathJax.typesetClear();
+  MathJax.typeset();
+
+}// 4問目終わり
+if (I === 11) {//次はここから。これで最後。
+document.getElementById("Bquestion").innerHTML = "";
+
+showResult();
+
+  MathJax.typesetClear();
+  MathJax.typeset();
+}// 12問目終わり
+
+ window.solutionText = solution;
+}
+
+ function showSolution() {
+  if (!window.solutionText) {
+    document.getElementById('solution').innerHTML = '';
+    return;
+  }
+  document.getElementById('solution').innerHTML = window.solutionText;
+  MathJax.typeset();
+}
+ 
+
+function checkAnswer() {
+const ansBtn = document.getElementById("ansButton");
+ansBtn.classList.add("hidden"); // ボタン非表示に戻
+  let allCorrect = true;
+  for (let i = 0; i < correctAnswers.length; i++) {
+    const input = document.getElementById(`input${i}`);
+    const val = parseInt(input.value);
+    if (val !== correctAnswers[i]) {
+      allCorrect = false;
+    }
+  }
+
+  const feedback = document.getElementById("feedback");
+  const nextBtn = document.getElementById("nextButton");
+ const soluBtn = document.getElementById("soluButton");
+soluBtn.classList.remove("hidden"); // ボタン表示
+
+  if (allCorrect) {
+    feedback.innerHTML = "<span style='color: green;'>正解！</span>";
+    nextBtn.classList.remove("hidden"); // ボタン表示
+	setTimeout(generateQuiz, 1000);
+  } else {
+    feedback.innerHTML = `<span style='color: red;'>不正解。正解は ${correctAnswers.join(", ")} です。</span>`;
+    nextBtn.classList.add("hidden"); // ボタン非表示に戻す（連打対策）
+        mistakeCount++;
+  }
+
+  document.getElementById("status").textContent = `現在${I}問目`;
+}
+
+function nextQuestion() {
+  I++; // カウントはここで進める
+	kaisu=1;
+ const soluBtn = document.getElementById("soluButton");
+   const ansBtn = document.getElementById("ansButton");
+document.getElementById("nextButton").classList.add("hidden"); // 再び隠す
+ansBtn.classList.remove("hidden"); // ボタン表示
+
+  document.getElementById("status").textContent = `現在${I}問目`;
+	soluBtn.classList.add("hidden"); 
+window.solutionText = ``;
+ showSolution();
+  generateQuestion();
+}
+
+function regenerateQuestion() {
+	 const soluBtn = document.getElementById("soluButton");
+  const ansBtn = document.getElementById("ansButton");
+ansBtn.classList.remove("hidden"); // ボタン表示
+
+	soluBtn.classList.add("hidden");
+	kaisu++;
+window.solutionText = `${kaisu}回目！`
+showSolution();
+  generateQuestion(); // 問番（I）はそのまま
+}
+
+ function showResult() {
+      endTime = new Date();
+      const durationSec = Math.floor((endTime - startTime) / 1000);
+      const minutes = Math.floor(durationSec / 60);
+      const seconds = durationSec % 60;
+
+      let timeRank = "D";
+      if (durationSec <= 600) timeRank = "S";
+      else if (durationSec <= 1200) timeRank = "A";
+      else if (durationSec <= 1800) timeRank = "B";
+      else if (durationSec <= 2400) timeRank = "C";
+
+      let mistakeRank = "D";
+      if (mistakeCount === 0) mistakeRank = "S";
+      else if (mistakeCount <= 5) mistakeRank = "A";
+      else if (mistakeCount <= 10) mistakeRank = "B";
+      else if (mistakeCount <= 15) mistakeRank = "C";
+
+      document.getElementById('question').innerHTML = `
+        <h2>結果</h2>
+        <p>開始時刻: ${startTime.toLocaleTimeString()}</p>
+        <p>終了時刻: ${endTime.toLocaleTimeString()}</p>
+        <p>かかった時間: ${minutes}分${seconds}秒（評価: ${timeRank}）</p>
+        <p>間違えた回数: ${mistakeCount}回（評価: ${mistakeRank}）</p>
+        <button class="button" onclick="copyScreenshot()">記録</button>
+      `;
+    }
+
+function copyScreenshot() {
+ const target = document.querySelector('.container'); // スクショ対象の要素
+
+  html2canvas(target).then(canvas => {
+    // 画像データURLを取得
+    const imageData = canvas.toDataURL("image/png");
+
+    // ダウンロードリンクを作成してクリック
+    const link = document.createElement("a");
+    link.href = imageData;
+    link.download = "screenshot.png"; // 保存時のファイル名
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+    }
+
+
+
+    function startOver() {
+      I = 0;
+	 const soluBtn = document.getElementById("soluButton");
+  const ansBtn = document.getElementById("ansButton");
+ansBtn.classList.remove("hidden"); // ボタン表示
+
+	soluBtn.classList.add("hidden")
+ document.getElementById("soluButton").classList.add("hidden");
+  document.getElementById("ansButton").classList.remove("hidden");
+  document.getElementById("status").textContent = `現在${I}問目`;
+  generateQuestion();    }
+
+window.onload = function () {
+  if (I === 0) {
+    document.getElementById("intro").style.display = "block";
+    document.getElementById("status").textContent = "準備中…";
+  } else {
+    generateQuestion();
+  }
+};
+document.getElementById("soluButton").style.backgroundColor = "orange";
+  </script>
+
+  <!-- MathJax読み込み -->
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.js"></script>
+  <script id="MathJax-script" async
+    src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+
+       function resizeCanvas() {
+      const canvas = document.getElementById('blackboard');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+
+    window.addEventListener('resize', resizeCanvas);  </script>
+  <script>
+    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, chtml: { displayAlign: "left" } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div id="left-area">
+
+     <div id="top">
+    <div id="status">現在1問目</div>
+    <button class="button" onclick="startOver()">最初から</button>
+  </div>
+
+  <div id="bottom">
+<div id="intro" style="margin-bottom: 1em;">
+  <p>【課題の取り組み方】</p>
+  <p>解答を入力し、「答え合わせ」で確認してください。不正解なら「この問題をもう一度」で再チャレンジ！</p>
+  <p>準備ができたら「開始」ボタンを押してください。</p>
+  <p>全部で10問です。終わったらリザルト画面になります。</p>
+  <p>リザルト画面にある記録ボタンを押し，ロイロにペーストしてください。</p>
+  <p>本日中に２回繰り返し，２回の記録を提出箱に提出をしてください。</p>
+  <button class="button" onclick="startTask()">開始</button>
+</div>
+    <div id="Bquestion"></div>
+    <div id="question"></div>
+    <div id="inputs"></div>
+
+    <button class="button hidden" id="ansButton" onclick="checkAnswer()"class="color1">答え合わせ</button>
+ <button class="button hidden" id="soluButton" onclick="showSolution()">解説</button>
+<button class="button" onclick="regenerateQuestion()">この問題をもう一度</button>
+    <button class="button hidden" id="nextButton" onclick="nextQuestion()">次の問題へ</button>
+    <div id="feedback"></div>
+	 <div id="solution" class="solution"></div>
+  </div>
+
+    </div>
+   <div id="right-area">
+      <p>ここにメモを書いたり、図形を描いたりできます。</p>
+      <canvas id="blackboard" width="700"height="700"></canvas>
+<button class="button"onclick="clearBoard()">クリア</button>
+<button class="button"onclick="toggleEraser()">消しゴム切替</button>
+      
+    </div>
+  </div>
+
+<script>
+  const canvas = document.getElementById('blackboard');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let isErasing = false; // 消しゴムモードのフラグ
+function toggleEraser() {
+  isErasing = !isErasing;
+
+  const button = document.querySelector('button[onclick="toggleEraser()"]');
+
+  if (isErasing) {
+    button.style.backgroundColor = "crimson";
+    button.style.color = "white";
+    button.textContent = "消しゴム（使用中）";
+  } else {
+    button.style.backgroundColor = "";
+    button.style.color = "";
+    button.textContent = "消しゴム切替";
+  }
+}
+
+
+  function getStrokeStyle() {
+    return isErasing ? "#222" : "white"; // 黒板色 or 白
+  }
+
+  function getLineWidth() {
+    return isErasing ? 25 : 2; // 消しゴムは太め
+  }
+
+  function drawLine(x, y) {
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = getStrokeStyle();
+    ctx.lineWidth = getLineWidth();
+    ctx.stroke();
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (drawing) drawLine(e.offsetX, e.offsetY);
+  });
+
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('mouseleave', () => drawing = false);
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    ctx.beginPath();
+    ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    drawing = true;
+  });
+
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    drawLine(touch.clientX - rect.left, touch.clientY - rect.top);
+  });
+
+  canvas.addEventListener('touchend', () => drawing = false);
+
+  function clearBoard() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+</script>
+
+</body>
+</html>
