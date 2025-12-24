@@ -1,0 +1,3315 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>平面図形</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: sans-serif;
+    }
+
+    .container {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+    }
+
+    #left-area, #right-area {
+      padding: 1em;
+      box-sizing: border-box;
+      overflow: auto;
+    }
+
+    #left-area {
+      flex: 1;
+      background-color: #f9f9f9;
+      font-size: 1em;
+
+    }
+
+    #right-area {
+      flex: 1;
+      background-color: #222;
+      color: white;
+    }
+         body{font-size:1.3em;}
+    @media (orientation: portrait) {
+      .container {
+        flex-direction: column;
+      }
+
+      #left-area, #right-area {
+        height: 50vh;
+      }
+
+
+    body {
+    font-size: 2em;
+  }
+
+   select, button {
+    font-size: 1.5em;
+  }
+}
+
+    .correct { color: green; }
+    .incorrect { color: red; }
+
+    #blackboard {
+      width: 100%;
+      height: auto;
+      max-height: 80vh;
+      touch-action: none;
+    }
+label {
+    font-size: 1.5rem;
+  }
+  select {
+    font-size: 1.4rem;
+    margin: 0 0.5em;
+  }
+  </style>
+  <script>
+    function getRandomInt(min, max, excludeZero = false) {
+      let v;
+      do {
+        v = Math.floor(Math.random() * (max - min + 1)) + min;
+      } while (excludeZero && v === 0);
+      return v;
+    }
+//インフラ関数下から。
+function insu(a, b, c) {//因数定理を利用した因数分解。3次式
+  for (let l = -10; l <= 10; l++) {
+    const value = a * l * l + b * l + c;
+    if (value === 0) {
+      return -l; // 最初に見つけた解を返して終了
+    }
+  }
+  return null; // 該当する値がない場合
+}
+
+
+
+    function gcd(a, b) {//最大公約数
+      return b === 0 ? Math.abs(a) : gcd(b, a % b);
+    }
+	function lcm(a, b) {//最小公倍数
+	  if (a === 0 || b === 0) return 0; // どちらかが0のときは0
+	  return Math.abs(a * b) / gcd(a, b);
+	}
+
+    function moji(b, variable = "") {//途中の項。プラス，マイナスもつける。
+      if (b === 0) return "";
+      if (b === 1) return `+${variable}`;
+      if (b === -1) return `-${variable}`;
+      return `${b > 0 ? "+" : ""}${b}${variable}`;
+    }
+
+    function keisu(b, variable = "") {//係数。1，-1のとき省略できるようにする。
+      if (b === 0) return "";
+      if (b === 1) return `${variable}`;
+      if (b === -1) return `-${variable}`;
+      return `${b}${variable}`;
+    }
+  function teisu(b, variable = "") {//定数項
+      if (b === 0) return "";
+     return `${b > 0 ? "+" : ""}${b}${variable}`;
+    }
+
+function kakko(n) {//負の数にカッコをつける
+  return n < 0 ? `(${n})` : `${n}`;
+}
+function kanyaku(n,j) {//ルートの簡約化 j=1の時は文字列，j=2の時は配列で数値を返す。[外，中]
+  if (n < 0) return `i√${-n}`; // 負の数は虚数
+  if (n === 0) return "0";
+  if (n === 1) return "1";
+
+  let outside = 1;
+  let inside = n;
+
+  for (let i = 2; i * i <= inside; i++) {
+    while (inside % (i * i) === 0) {
+      inside /= i * i;
+      outside *= i;
+    }
+  }
+if(j===1){
+ if (inside === 1) return `${outside}`;
+if (outside === 1) return `\\sqrt{${inside}}`;
+
+return `${outside}\\sqrt{${inside}}`;}
+if(j===2){
+return [outside,inside];
+
+}
+}
+
+function bunsu(s, b) {//分数表記してくれる。分母が1のときは自動的に分子だけ返す。yakubunしてから使うといいかも。
+[s,b]=yakubun(s,b);
+  if (b === 1) { return `${s}`; }
+  if (b === -1) { return `${-s}`; }
+  return s < 0 ? `-\\frac{${-s}}{${b}}` : `\\frac{${s}}{${b}}`;
+}
+
+
+function yakubun(numerator, denominator) {//約分関数。[a,b]=yakubun(a,b)のように使う。
+  if (denominator === 0) {
+    throw new Error("分母が0です");
+  }
+
+  const divisor = gcd(Math.abs(numerator), Math.abs(denominator));
+  numerator = numerator/divisor;
+  denominator = denominator/divisor;
+
+  // 分母を正にする
+  if (denominator < 0) {
+    numerator = -numerator;
+    denominator = -denominator;
+  }
+
+  return [numerator, denominator];
+}
+//インフラ関数ここまで
+
+function angleMark(P, Q1, Q2, r = 14) {
+  // P を頂点、PQ1 と PQ2 のなす角
+  const v1 = { x: Q1.x - P.x, y: Q1.y - P.y };
+  const v2 = { x: Q2.x - P.x, y: Q2.y - P.y };
+
+  const n1 = Math.hypot(v1.x, v1.y);
+  const n2 = Math.hypot(v2.x, v2.y);
+
+  const u1 = { x: v1.x / n1, y: v1.y / n1 };
+  const u2 = { x: v2.x / n2, y: v2.y / n2 };
+
+  // 中間方向
+  const mid = {
+    x: P.x + (u1.x + u2.x) * r,
+    y: P.y + (u1.y + u2.y) * r
+  };
+
+  ctx.beginPath();
+  ctx.arc(tx(mid.x), ty(mid.y), 4, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+
+function drawTriangleFigure(a, b, c, m, n, j) {
+  const canvas = document.getElementById('figureCanvas');
+  const ctx = canvas.getContext('2d');
+
+  // 実サイズをCSSから取得
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // ===== 座標計算 =====
+  const B = { x: 0, y: 0 };
+  const C = { x: c, y: 0 };
+  const Ax = (a*a - b*b + c*c) / (2*c);
+  const Ay = Math.sqrt(a*a - Ax*Ax);
+  const A = { x: Ax, y: Ay };
+
+  let D;
+  if (j === 0) {
+    D = { x: c * m / (m + n), y: 0 };
+  } else {
+    const BD = c * m / Math.abs(m - n);
+    D = (m > n) ? { x: BD, y: 0 } : { x: -BD, y: 0 };
+  }
+
+  const pts = [A, B, C, D];
+
+  // ===== 自動スケーリング =====
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const pad = 30;
+  const s = Math.min(
+    (canvas.width - 2*pad) / (maxX - minX),
+    (canvas.height - 2*pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // ===== 三角形 =====
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#000";
+  ctx.beginPath();
+  ctx.moveTo(tx(A.x), ty(A.y));
+  ctx.lineTo(tx(B.x), ty(B.y));
+  ctx.lineTo(tx(C.x), ty(C.y));
+  ctx.closePath();
+  ctx.stroke();
+// ===== 外角を見やすくするため 辺を実線で延長 =====
+if (j === 1) {
+  const extend = 0.4; // 延長量（辺長に対する比）
+  let ex, ey;
+
+  if (m > n) {
+    // AB を延長
+    ex = A.x + (A.x - B.x) * extend;
+    ey = A.y + (A.y - B.y) * extend;
+  } else {
+    // AC を延長
+    ex = A.x + (A.x - C.x) * extend;
+    ey = A.y + (A.y - C.y) * extend;
+  }
+
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(tx(A.x), ty(A.y));
+  ctx.lineTo(tx(ex), ty(ey));
+  ctx.stroke();
+}
+
+// ===== BC の延長（外角のときのみ・破線） =====
+if (j === 1) {
+  ctx.setLineDash([4, 4]);
+  ctx.lineWidth = 1.5;
+
+  ctx.beginPath();
+  if (m > n) {
+    // C 側に延長
+    ctx.moveTo(tx(C.x), ty(C.y));
+    ctx.lineTo(tx(D.x), ty(D.y));
+  } else {
+    // B 側に延長
+    ctx.moveTo(tx(B.x), ty(B.y));
+    ctx.lineTo(tx(D.x), ty(D.y));
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+}
+
+
+  // ===== 二等分線（破線） =====
+  ctx.setLineDash([6, 4]);
+  ctx.beginPath();
+  ctx.moveTo(tx(A.x), ty(A.y));
+  ctx.lineTo(tx(D.x), ty(D.y));
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+
+  
+  // ===== 点ラベル =====
+  function label(p, name) {
+    if(p===A){
+    ctx.fillText(name, tx(p.x) -6, ty(p.y) - 4);}
+    else{ctx.fillText(name, tx(p.x) -4, ty(p.y)  +20);}
+  }
+  ctx.font = "1.5rem sans-serif";
+  label(A, "A"); label(B, "B"); label(C, "C"); label(D, "D");
+  
+}
+
+function drawCircumcenterFigure(j, m, n) { 
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // ======================
+  // 1. BC を固定
+  // ======================
+  const B = { x: -1, y: 0 };
+  const C = { x:  1, y: 0 };
+
+  // ======================
+  // 2. 角度設定
+  // 外心：∠ABC = 2m, ∠ACB = 2n
+  // ======================
+  const angleB = (90 - n) * Math.PI / 180;
+  const angleC = (90 - m) * Math.PI / 180;
+
+  const dirB = { x: Math.cos(angleB), y: Math.abs(Math.sin(angleB)) };
+const dirC = { x: -Math.cos(angleC), y: Math.abs(Math.sin(angleC)) };
+
+  // ======================
+  // 3. 半直線の交点 → A
+  // ======================
+  function intersect(P, v, Q, w) {
+    const t = ((Q.x - P.x) * w.y - (Q.y - P.y) * w.x) /
+              (v.x * w.y - v.y * w.x);
+    return { x: P.x + t * v.x, y: P.y + t * v.y };
+  }
+
+  const A = intersect(B, dirB, C, dirC);
+
+  // ======================
+  // 4. 外心 O（厳密）
+  // ======================
+  function circumcenter(A, B, C) {
+    const D = 2 * (A.x * (B.y - C.y)
+                + B.x * (C.y - A.y)
+                + C.x * (A.y - B.y));
+    return {
+      x: ((A.x*A.x + A.y*A.y) * (B.y - C.y)
+        + (B.x*B.x + B.y*B.y) * (C.y - A.y)
+        + (C.x*C.x + C.y*C.y) * (A.y - B.y)) / D,
+      y: ((A.x*A.x + A.y*A.y) * (C.x - B.x)
+        + (B.x*B.x + B.y*B.y) * (A.x - C.x)
+        + (C.x*C.x + C.y*C.y) * (B.x - A.x)) / D
+    };
+  }
+
+  const O = circumcenter(A, B, C);
+
+  // ======================
+  // 5. 自動スケーリング
+  // ======================
+  const pts = [A, B, C, O];
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width  - 2*pad) / (maxX - minX),
+    (canvas.height - 2*pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // ======================
+  // 6. 描画
+  // ======================
+  ctx.lineWidth = 2;
+
+  // 三角形
+  ctx.beginPath();
+  ctx.moveTo(tx(A.x), ty(A.y));
+  ctx.lineTo(tx(B.x), ty(B.y));
+  ctx.lineTo(tx(C.x), ty(C.y));
+  ctx.closePath();
+  ctx.stroke();
+
+  // 外心からの線
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(tx(O.x), ty(O.y)); ctx.lineTo(tx(A.x), ty(A.y));
+  ctx.moveTo(tx(O.x), ty(O.y)); ctx.lineTo(tx(B.x), ty(B.y));
+  ctx.moveTo(tx(O.x), ty(O.y)); ctx.lineTo(tx(C.x), ty(C.y));
+  ctx.stroke();
+
+  // 点
+  function point(p, label, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillText(label, tx(p.x)+dx, ty(p.y)+dy);
+  }
+
+  ctx.font = "1.5rem sans-serif";
+  point(A, "A", 6, -6);
+  point(B, "B", -14, 14);
+  point(C, "C", 6, 14);
+  point(O, "O", 6, 14);
+
+ 
+}
+
+function intersect(P, v, Q, w) {
+  const t = ((Q.x - P.x) * w.y - (Q.y - P.y) * w.x) /
+            (v.x * w.y - v.y * w.x);
+  return { x: P.x + t * v.x, y: P.y + t * v.y };
+}
+
+function drawIncenter_j2(m, n) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // ======================
+  // 1. BC を固定
+  // ======================
+  const B = { x: -1, y: 0 };
+  const C = { x:  1, y: 0 };
+
+  // ======================
+  // 2. ∠ABC = 2m, ∠ACB = 2n から A を決定
+  // ======================
+  const angleB = (2 * m) * Math.PI / 180;
+  const angleC = (2 * n) * Math.PI / 180;
+
+  const dirB = { x: Math.cos(angleB),  y: Math.sin(angleB) };
+  const dirC = { x: -Math.cos(angleC), y: Math.sin(angleC) };
+
+  const A = intersect(B, dirB, C, dirC);
+
+  // ======================
+  // 3. 内心 I（角度 m, n の二等分線）
+  // ======================
+  const bisB = {
+    x: Math.cos(m * Math.PI / 180),
+    y: Math.sin(m * Math.PI / 180)
+  };
+
+  const bisC = {
+    x: -Math.cos(n * Math.PI / 180),
+    y:  Math.sin(n * Math.PI / 180)
+  };
+
+  const I = intersect(B, bisB, C, bisC);
+
+  // ======================
+  // 4. 自動スケーリング
+  // ======================
+  const pts = [A, B, C, I];
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width  - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // ======================
+  // 5. 描画
+  // ======================
+  ctx.lineWidth = 2;
+
+  // 三角形
+  ctx.beginPath();
+  ctx.moveTo(tx(A.x), ty(A.y));
+  ctx.lineTo(tx(B.x), ty(B.y));
+  ctx.lineTo(tx(C.x), ty(C.y));
+  ctx.closePath();
+  ctx.stroke();
+
+  // 角の二等分線（破線）
+  ctx.setLineDash([6, 4]);
+  ctx.lineWidth = 1;
+
+  ctx.beginPath();
+  ctx.moveTo(tx(B.x), ty(B.y));
+  ctx.lineTo(tx(I.x), ty(I.y));
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(tx(C.x), ty(C.y));
+  ctx.lineTo(tx(I.x), ty(I.y));
+  ctx.stroke();
+
+  ctx.setLineDash([]);
+
+  // 点描画
+  ctx.fillStyle = "#000";
+  ctx.font = "1.5rem sans-serif";
+
+  function drawPoint(p, label, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(label, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  drawPoint(A, "A", 6, -6);
+  drawPoint(B, "B", -14, 14);
+  drawPoint(C, "C", 6, 14);
+  drawPoint(I, "I", 6, 14);
+
+  
+}
+
+function intersect(P, v, Q, w) {
+  const t = ((Q.x - P.x) * w.y - (Q.y - P.y) * w.x) /
+            (v.x * w.y - v.y * w.x);
+  return {
+    x: P.x + t * v.x,
+    y: P.y + t * v.y
+  };
+}
+
+function drawMenelausFigure(m, n) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // =====================
+  // 1. 基本点（BC固定）
+  // =====================
+  const B = { x: 0,  y: 0 };
+  const C = { x: 10, y: 0 };
+
+  // A の生成（自然な三角形）
+  const AB = getRandomInt(20, 30);
+  const angleB = getRandomInt(40, 70) * Math.PI / 180;
+
+  const A = {
+    x: AB * Math.cos(angleB),
+    y: AB * Math.sin(angleB)
+  };
+
+  // =====================
+  // 2. R：AB の内分点
+  // =====================
+  const R = {
+    x: (m[1] * A.x + m[0] * B.x) / (m[0] + m[1]),
+    y: (m[1] * A.y + m[0] * B.y) / (m[0] + m[1])
+  };
+
+  // =====================
+  // 3. P：BC の外分点（C側）
+  // =====================
+  const P = {
+    x: (n[0] * C.x - n[1] * B.x) / (n[0] - n[1]),
+    y: 0
+  };
+
+  // =====================
+  // 4. Q：AC と RP の交点
+  // =====================
+  const Q = intersect(
+    R,
+    { x: P.x - R.x, y: P.y - R.y },   // 直線 RP
+    A,
+    { x: C.x - A.x, y: C.y - A.y }    // 線分 AC
+  );
+
+  // =====================
+  // 5. スケーリング
+  // =====================
+  const pts = [A, B, C, P, Q, R];
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width  - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 6. 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 三角形 ABC
+  ctx.beginPath();
+  ctx.moveTo(tx(A.x), ty(A.y));
+  ctx.lineTo(tx(B.x), ty(B.y));
+  ctx.lineTo(tx(C.x), ty(C.y));
+  ctx.closePath();
+  ctx.stroke();
+
+  // 直線 PQR（一直線を強調）
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(tx(P.x), ty(P.y));
+  ctx.lineTo(tx(R.x), ty(R.y));
+  ctx.stroke();
+// ===== CP（BCの延長）を実線で描画 =====
+ctx.lineWidth = 2;
+ctx.beginPath();
+ctx.moveTo(tx(C.x), ty(C.y));
+ctx.lineTo(tx(P.x), ty(P.y));
+ctx.stroke();
+  // =====================
+  // 7. 点描画
+  // =====================
+  ctx.font = "1.5rem sans-serif";
+  ctx.fillStyle = "#000";
+
+  function drawPoint(p, label, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(label, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  drawPoint(A, "A",  6, -6);
+  drawPoint(B, "B", -20, 20);
+  drawPoint(C, "C",  -6, 23);
+  drawPoint(R, "R",  -20, 0);
+  drawPoint(Q, "Q",  10, 0);
+  drawPoint(P, "P",  6, 20);
+}
+
+function drawCevaFigure(m, n) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // =====================
+  // 1. 基本点（BC固定）
+  // =====================
+  const B = { x: 0,  y: 0 };
+  const C = { x: 10, y: 0 };
+
+  const AB = getRandomInt(6, 18);
+  const angleB = getRandomInt(30, 70) * Math.PI / 180;
+
+  const A = {
+    x: AB * Math.cos(angleB),
+    y: AB * Math.sin(angleB)
+  };
+
+  // =====================
+  // 2. 内分点 R, Q
+  // =====================
+  const R = {
+    x: (m[1] * A.x + m[0] * B.x) / (m[0] + m[1]),
+    y: (m[1] * A.y + m[0] * B.y) / (m[0] + m[1])
+  };
+
+  const Q = {
+    x: (n[0] * A.x + n[1] * C.x) / (n[0] + n[1]),
+    y: (n[0] * A.y + n[1] * C.y) / (n[0] + n[1])
+  };
+
+  // =====================
+  // 3. 交点 O（BQ ∩ CR）
+  // =====================
+  const O = intersect(
+    B,
+    { x: Q.x - B.x, y: Q.y - B.y },
+    C,
+    { x: R.x - C.x, y: R.y - C.y }
+  );
+
+  // =====================
+  // 4. 交点 P（AO ∩ BC）
+  // =====================
+  const P = intersect(
+    A,
+    { x: O.x - A.x, y: O.y - A.y },
+    B,
+    { x: C.x - B.x, y: C.y - B.y }
+  );
+
+  // =====================
+  // 5. スケーリング
+  // =====================
+  const pts = [A, B, C, R, Q, O, P];
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width  - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 6. 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // △ABC
+  ctx.beginPath();
+  ctx.moveTo(tx(A.x), ty(A.y));
+  ctx.lineTo(tx(B.x), ty(B.y));
+  ctx.lineTo(tx(C.x), ty(C.y));
+  ctx.closePath();
+  ctx.stroke();
+
+  // BQ
+  ctx.beginPath();
+  ctx.moveTo(tx(B.x), ty(B.y));
+  ctx.lineTo(tx(Q.x), ty(Q.y));
+  ctx.stroke();
+
+  // CR
+  ctx.beginPath();
+  ctx.moveTo(tx(C.x), ty(C.y));
+  ctx.lineTo(tx(R.x), ty(R.y));
+  ctx.stroke();
+
+  // AO
+  ctx.beginPath();
+  ctx.moveTo(tx(A.x), ty(A.y));
+  ctx.lineTo(tx(P.x), ty(P.y));
+  ctx.stroke();
+
+  // =====================
+  // 7. 点表示
+  // =====================
+  ctx.font = "1.5rem sans-serif";
+  ctx.fillStyle = "#000";
+
+  function drawPoint(p, label, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(label, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  drawPoint(A, "A",  6, -6);
+  drawPoint(B, "B", -20, 6);
+  drawPoint(C, "C",  6, 6);
+  drawPoint(R, "R",  -10, -7);
+  drawPoint(Q, "Q",  6, 6);
+  drawPoint(O, "O",  2, -8);
+  drawPoint(P, "P",  0, 20);
+}
+
+function drawInscribedAnglePattern1(a) {
+  // a : 中心角（偶数、20～180）
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // =====================
+  // 1. 円の基本設定
+  // =====================
+  const O = { x: 0, y: 0 };
+  const R = 5;
+
+  // =====================
+  // 2. 点 B, C（中心角 a）
+  // =====================
+  const baseAngle = -Math.PI / 2; // y軸正方向
+  const half = (a / 2) * Math.PI / 180;
+
+  const B = {
+    x: R * Math.cos(baseAngle - half),
+    y: R * Math.sin(baseAngle - half)
+  };
+
+  const C = {
+    x: R * Math.cos(baseAngle + half),
+    y: R * Math.sin(baseAngle + half)
+  };
+
+  // =====================
+  // 3. 点 A（円周上・上側）
+  // =====================
+  const Aangle = getRandomInt(20, 160) * Math.PI / 180;
+  const A = {
+    x: R * Math.cos(Aangle),
+    y: R * Math.sin(Aangle)
+  };
+
+  // =====================
+// 4. スケーリング
+// =====================
+const circleBounds = [
+  { x:  R, y:  0 },
+  { x: -R, y:  0 },
+  { x:  0, y:  R },
+  { x:  0, y: -R }
+];
+
+const pts = [A, B, C, O, ...circleBounds];
+
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width  - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+  const angleAB = Math.atan2(B.y - A.y, B.x - A.x);
+const angleAC = Math.atan2(C.y - A.y, C.x - A.x);
+
+
+  // =====================
+  // 5. 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円
+  ctx.beginPath();
+  ctx.arc(tx(O.x), ty(O.y), R * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 三角形 ABC
+  ctx.beginPath();
+  ctx.moveTo(tx(A.x), ty(A.y));
+  ctx.lineTo(tx(B.x), ty(B.y));
+  ctx.lineTo(tx(C.x), ty(C.y));
+  ctx.closePath();
+  ctx.stroke();
+
+  // 半径 OB, OC（a ≠ 180 のときだけ）
+  if (a !== 180) {
+    ctx.beginPath();
+    ctx.moveTo(tx(O.x), ty(O.y));
+    ctx.lineTo(tx(B.x), ty(B.y));
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(tx(O.x), ty(O.y));
+    ctx.lineTo(tx(C.x), ty(C.y));
+    ctx.stroke();
+  }
+  // ===== 円周角 θ の弧表示 =====
+const rTheta = 0.7;
+
+ctx.beginPath();
+ctx.arc(
+  tx(A.x),
+  ty(A.y),
+  rTheta * s,
+  -angleAB,
+  -angleAC,
+  angleAB < angleAC   // 向き自動判定
+);
+ctx.stroke();
+
+
+  // =====================
+  // 6. 点表示
+  // =====================
+  ctx.font = "1.5rem sans-serif";
+  ctx.fillStyle = "#000";
+
+  function drawPoint(p, label, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(label, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  drawPoint(A, "A",  6, -6);
+  drawPoint(B, "B", -20, 18);
+  drawPoint(C, "C",  6, 18);
+  drawPoint(O, "O",  -6, -10);
+  // =====================
+// 7. ∠BOC の表示（a ≠ 180 のとき）
+// =====================
+if (a !== 180) {
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#000";
+
+  ctx.fillText(
+    `${a}°`,
+    tx(O.x) -10,
+    ty(O.y) + 25
+  );
+}
+// 中心角の弧（a ≠ 180）
+if (a !== 180) {
+  const rArc = 0.5;
+
+  ctx.beginPath();
+  ctx.arc(
+    tx(O.x),
+    ty(O.y),
+    rArc * s,
+    -(baseAngle + half),
+    -(baseAngle - half),
+    false
+  );
+  ctx.stroke();
+}
+// θ の文字表示
+ctx.font = "16px sans-serif";
+ctx.fillStyle = "#000";
+
+const theta = a / 2;
+
+ctx.fillText(
+  `θ`,
+  tx(A.x) -5,
+  ty(A.y) + 30
+);
+
+
+}
+
+function drawInscribedAnglePattern2(theta) {
+  // theta = ∠ADB（20～60 程度を想定）
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // =====================
+  // 1. 基本設定
+  // =====================
+  const R = 5;
+  const O = { x: 0, y: 0 };
+
+  // BD を直径（x軸）
+  const B = { x: -R, y: 0 };
+  const D = { x:  R, y: 0 };
+
+  // 与えられた角
+  const phi = 90 - theta;           // ∠ACD
+  const phiRad = phi * Math.PI / 180;
+
+  // =====================
+  // 2. 点 C（下側）
+  // =====================
+  const Cangle = getRandomInt(280, 300) * Math.PI / 180;
+  const C = {
+    x: R * Math.cos(Cangle),
+    y: R * Math.sin(Cangle)
+  };
+
+  // =====================
+  // 3. 点 A（∠ACD = φ を満たす）
+  // =====================
+  const angleCD = Math.atan2(D.y - C.y, D.x - C.x);
+  const dirAngle = angleCD + phiRad;
+
+  // 直線（C, dirAngle）と円の交点
+  function intersectLineCircle(P, angle, R) {
+    const dx = Math.cos(angle);
+    const dy = Math.sin(angle);
+
+    const Acoef = dx * dx + dy * dy;
+    const Bcoef = 2 * (P.x * dx + P.y * dy);
+    const Ccoef = P.x * P.x + P.y * P.y - R * R;
+
+    const disc = Bcoef * Bcoef - 4 * Acoef * Ccoef;
+    const t = (-Bcoef + Math.sqrt(disc)) / (2 * Acoef);
+
+    return {
+      x: P.x + t * dx,
+      y: P.y + t * dy
+    };
+  }
+
+  const A = intersectLineCircle(C, dirAngle, R);
+
+  // =====================
+  // 4. スケーリング（円全体を含める）
+  // =====================
+  const pts = [
+    A, B, C, D, O,
+    { x:  R, y:  0 }, { x: -R, y:  0 },
+    { x:  0, y:  R }, { x:  0, y: -R }
+  ];
+
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width  - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 5. 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円
+  ctx.beginPath();
+  ctx.arc(tx(0), ty(0), R * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 線分：AB, AD, AC, CD
+  [[A,B],[A,D],[A,C],[C,D],[B,D]].forEach(([p,q])=>{
+    ctx.beginPath();
+    ctx.moveTo(tx(p.x), ty(p.y));
+    ctx.lineTo(tx(q.x), ty(q.y));
+    ctx.stroke();
+  });
+
+  // =====================
+  // 6. ∠ACD の弧（C中心）
+  // =====================
+  ctx.beginPath();
+  ctx.arc(
+    tx(C.x), ty(C.y),
+    0.5 * s,
+    -Math.atan2(A.y - C.y, A.x - C.x),
+    -Math.atan2(D.y - C.y, D.x - C.x),
+    false
+  );
+
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(
+    tx(D.x), ty(D.y),
+    1 * s,
+    -Math.atan2(B.y - D.y, B.x - D.x),
+    -Math.atan2(A.y - D.y, A.x - D.x),
+    false
+  );
+  ctx.stroke();
+  // 角度表示（φ）
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#000";
+  ctx.fillText(`${phi}°`, tx(C.x) -7, ty(C.y) - 20);
+    ctx.fillText(`θ`, tx(D.x) -40, ty(D.y) -3);
+  // =====================
+  // 7. 点表示
+  // =====================
+  ctx.font = "1.5rem sans-serif";
+
+  function drawPoint(p, label, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(label, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  drawPoint(A, "A",  -10, -6);
+  drawPoint(B, "B", -18, 14);
+  drawPoint(C, "C",  6, 14);
+  drawPoint(D, "D",  6, 14);
+  drawPoint(O, "O",  -12, 24);
+}
+
+
+function drawCyclicPatternCustom(a, b, c) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // =====================
+  // 基本設定
+  // =====================
+  const R = 5;
+  const O = { x: 0, y: 0 };
+
+  const deg = d => d * Math.PI / 180;
+
+  // =====================
+  // 点B, C（基準：真下）
+  // =====================
+  const base = -Math.PI / 2;
+
+  const B = {
+    x: R * Math.cos(base - deg(a / 2)),
+    y: R * Math.sin(base - deg(a / 2))
+  };
+
+  const C = {
+    x: R * Math.cos(base + deg(a / 2)),
+    y: R * Math.sin(base + deg(a / 2))
+  };
+  const E={
+    x: R * Math.cos(base - deg(a / 2))-2,
+    y: R * Math.sin(base - deg(a / 2))
+  }
+
+  // =====================
+  // 点A, D
+  // =====================
+  const angleB = Math.atan2(B.y, B.x);
+  const angleC = Math.atan2(C.y, C.x);
+
+  const A = {
+    x: R * Math.cos(angleB - deg(b)),
+    y: R * Math.sin(angleB - deg(b))
+  };
+
+  const D = {
+    x: R * Math.cos(angleC + deg(c)),
+    y: R * Math.sin(angleC + deg(c))
+  };
+
+  // =====================
+  // 点E（BC延長）
+  // =====================
+  const vBC = {
+    x: B.x - C.x,
+    y: B.y - C.y
+  };
+  const len = Math.hypot(vBC.x, vBC.y);
+
+
+
+  // =====================
+  // スケーリング
+  // =====================
+  const pts = [
+  A, B, C, D, E,
+  { x:  R, y:  0 },
+  { x: -R, y:  0 },
+  { x:  0, y:  R },
+  { x:  0, y: -R }
+];
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width  - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+
+  
+  // =====================
+  // 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円
+  ctx.beginPath();
+  ctx.arc(tx(0), ty(0), R * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 線分
+  function drawSeg(p, q) {
+    ctx.beginPath();
+    ctx.moveTo(tx(p.x), ty(p.y));
+    ctx.lineTo(tx(q.x), ty(q.y));
+    ctx.stroke();
+  }
+
+  drawSeg(A, B);
+  drawSeg(E, C);
+  drawSeg(D, A);
+  drawSeg(D, C);
+
+
+
+  // =====================
+  // 角度表示
+  // =====================
+  ctx.font = "16px sans-serif";
+
+  // ∠ADC
+  ctx.fillText(
+    `${(a + b) / 2}°`,
+    tx(D.x) - 25,
+    ty(D.y) + 30
+  );
+
+  // ∠BCD
+  ctx.fillText(
+    `${180 - (a + c) / 2}°`,
+    tx(C.x) - 35,
+    ty(C.y) - 10
+  );
+
+  // =====================
+  // 点ラベル
+  // =====================
+  function label(p, name, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(name, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  label(A, "A", 6, -6);
+  label(B, "B", -14, 14);
+  label(C, "C", 6, 14);
+  label(D, "D", 6, -6);
+  label(E, "E", 6, 14);
+
+
+  function drawAngleArc(center, p1, p2, radius, label) {
+  let a1 = -Math.atan2(p1.y - center.y, p1.x - center.x);
+  let a2 = -Math.atan2(p2.y - center.y, p2.x - center.x);
+  if(a1<a2){
+  ctx.beginPath();
+  ctx.arc(
+    tx(center.x),
+    ty(center.y),
+    radius * s,
+    a1,
+    a2,
+    a1 < a2
+  );
+  ctx.stroke();
+  }
+else{
+    ctx.beginPath();
+  ctx.arc(
+    tx(center.x),
+    ty(center.y),
+    radius * s,
+    a2,
+    a1,
+    a1 < a2
+  );
+  ctx.stroke();
+}
+  if (label) {
+    const mid = (a1 + a2) / 2;
+    ctx.fillText(
+      label,
+      tx(center.x +2* radius * Math.cos(mid)),
+      ty(center.y - 2*radius * Math.sin(mid))
+    );
+  }
+}
+drawAngleArc(
+  D,
+  A,
+  C,
+  0.5,
+  ``
+);
+drawAngleArc(
+  C,
+  D,
+  B,
+  0.5,
+  ``
+);
+drawAngleArc(
+  A,
+  B,
+  D,
+  0.5,
+  `α`
+);
+drawAngleArc(
+  B,
+  A,
+  E,
+  0.5,
+  `β`
+);
+}
+
+function drawCyclicQuadIntersection(a, b, c,anglePQ) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // =====================
+  // 基本設定
+  // =====================
+  const R = 5;
+  const O = { x: 0, y: 0 };
+  const deg = d => d * Math.PI / 180;
+
+  // =====================
+  // 点B, C（基準：真下）
+  // =====================
+  const base = -Math.PI / 2;
+
+  const B = {
+    x: R * Math.cos(base - deg(a / 2)),
+    y: R * Math.sin(base - deg(a / 2))
+  };
+
+  const C = {
+    x: R * Math.cos(base + deg(a / 2)),
+    y: R * Math.sin(base + deg(a / 2))
+  };
+
+  // =====================
+  // 点A, D
+  // =====================
+  const angleB = Math.atan2(B.y, B.x);
+  const angleC = Math.atan2(C.y, C.x);
+
+  const A = {
+    x: R * Math.cos(angleB - deg(b)),
+    y: R * Math.sin(angleB - deg(b))
+  };
+
+  const D = {
+    x: R * Math.cos(angleC + deg(c)),
+    y: R * Math.sin(angleC + deg(c))
+  };
+
+  // =====================
+  // 交点計算関数
+  // =====================
+  function intersect(p1, p2, p3, p4) {
+    const a1 = p2.y - p1.y;
+    const b1 = p1.x - p2.x;
+    const c1 = a1 * p1.x + b1 * p1.y;
+
+    const a2 = p4.y - p3.y;
+    const b2 = p3.x - p4.x;
+    const c2 = a2 * p3.x + b2 * p3.y;
+
+    const det = a1 * b2 - a2 * b1;
+    if (Math.abs(det) < 1e-10) return null;
+
+    return {
+      x: (b2 * c1 - b1 * c2) / det,
+      y: (a1 * c2 - a2 * c1) / det
+    };
+  }
+
+  // =====================
+  // 点P, Q
+  // =====================
+  const P = intersect(B, A, C, D); // BA と CD
+  const Q = intersect(B, C, D, A); // BC と DA
+
+  // =====================
+  // スケーリング
+  // =====================
+  const pts = [
+    A, B, C, D, P, Q,
+    { x:  R, y:  0 },
+    { x: -R, y:  0 },
+    { x:  0, y:  R },
+    { x:  0, y: -R }
+  ];
+
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width  - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円
+  ctx.beginPath();
+  ctx.arc(tx(0), ty(0), R * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 線分描画用
+  function drawSeg(p, q) {
+    ctx.beginPath();
+    ctx.moveTo(tx(p.x), ty(p.y));
+    ctx.lineTo(tx(q.x), ty(q.y));
+    ctx.stroke();
+  }
+
+  // 四角形と延長線
+  drawSeg(A, Q);
+  drawSeg(B, Q);
+  drawSeg(D, P);
+  drawSeg(A, P);
+
+  // 交差する直線
+  drawSeg(B, A);
+  drawSeg(C, D);
+  drawSeg(B, C);
+  drawSeg(D, A);
+
+  // =====================
+  // 角弧（表示角は外から制御）
+  // =====================
+  // 例：
+  // drawAngleArc(Q, A, B, 1, "α°");
+  // drawAngleArc(P, A, D, 1, "β°");
+
+  // =====================
+  // 点表示
+  // =====================
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#000";
+
+  function label(p, name, dx, dy) {
+    if (!p) return;
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(name, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  label(P, "P",  4, -4);
+  label(Q, "Q", 6, 14);
+  label(A, "A",  -10, -6);
+  label(B, "B", -14, 14);
+  label(C, "C",  6, 14);
+  label(D, "D", 4, -4);
+  label(C, "θ", -20 , -5);
+  
+  function drawAngleArc(center, p1, p2, radius, label) {
+  let a1 = -Math.atan2(p1.y - center.y, p1.x - center.x);
+  let a2 = -Math.atan2(p2.y - center.y, p2.x - center.x);
+  if(a1<a2){
+  ctx.beginPath();
+  ctx.arc(
+    tx(center.x),
+    ty(center.y),
+    radius * s,
+    a1,
+    a2,
+    a1 < a2
+  );
+  ctx.stroke();
+  }
+else{
+    ctx.beginPath();
+  ctx.arc(
+    tx(center.x),
+    ty(center.y),
+    radius * s,
+    a2,
+    a1,
+    a1 < a2
+  );
+  ctx.stroke();
+}
+  if (label) {
+    const mid = (a1 + a2) / 2;
+    ctx.fillText(
+      label,
+      tx(center.x +2* radius * Math.cos(mid)),
+      ty(center.y - radius * Math.sin(mid))
+    );
+  }
+}
+
+
+drawAngleArc(
+  C,
+  D,
+  B,
+  2,
+  ``
+);
+drawAngleArc(
+  P,
+  B,
+  C,
+  2.5,
+  `${anglePQ[1]}°`
+);
+drawAngleArc(
+  Q,
+  B,
+  A,
+  3,
+  `${anglePQ[0]}°`
+);
+
+
+}
+
+function drawIncircleTriangle(m) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // =====================
+  // 値の設定
+  // =====================
+  const m0 = m[0], m1 = m[1], m2 = m[2];
+  const a = m0 + m1; // BC
+  const b = m1 + m2; // CA
+  const c = m0 + m2; // AB
+
+  // =====================
+  // 三角形の座標
+  // =====================
+  const B = { x: 0, y: 0 };
+  const C = { x: a, y: 0 };
+
+  // A の座標（余弦定理）
+  const xA = (c * c - b * b + a * a) / (2 * a);
+  const yA = Math.sqrt(Math.max(0, c * c - xA * xA));
+
+  const A = { x: xA, y: yA };
+
+  // =====================
+  // 接点 P, Q, R
+  // =====================
+  // P : BC 上
+  const P = {
+    x: B.x + (m0 / a) * (C.x - B.x),
+    y: 0
+  };
+
+  // Q : CA 上
+  const Q = {
+    x: C.x + (m1 / b) * (A.x - C.x),
+    y: C.y + (m1 / b) * (A.y - C.y)
+  };
+
+  // R : AB 上
+  const R = {
+    x: A.x + (m2 / c) * (B.x - A.x),
+    y: A.y + (m2 / c) * (B.y - A.y)
+  };
+
+  // =====================
+  // 内心（参考：円描画用）
+  // =====================
+  const I = {
+    x: (a * A.x + b * B.x + c * C.x) / (a + b + c),
+    y: (a * A.y + b * B.y + c * C.y) / (a + b + c)
+  };
+
+  // 内接円半径
+  const area = Math.abs(
+    (B.x * (C.y - A.y) +
+     C.x * (A.y - B.y) +
+     A.x * (B.y - C.y)) / 2
+  );
+  const r = (2 * area) / (a + b + c);
+
+  // =====================
+  // スケーリング
+  // =====================
+  const pts = [A, B, C];
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 三角形
+  ctx.beginPath();
+  ctx.moveTo(tx(A.x), ty(A.y));
+  ctx.lineTo(tx(B.x), ty(B.y));
+  ctx.lineTo(tx(C.x), ty(C.y));
+  ctx.closePath();
+  ctx.stroke();
+
+  // 内接円
+  ctx.beginPath();
+  ctx.arc(tx(I.x), ty(I.y), r * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 点描画
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#000";
+
+  function drawPoint(p, name, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(name, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  drawPoint(A, "A", -10, -6);
+  drawPoint(B, "B", -14, 18);
+  drawPoint(C, "C", 6, 18);
+  drawPoint(P, "P", -6, 18);
+  drawPoint(Q, "Q", 6, -6);
+  drawPoint(R, "R", -10, -6);
+}
+
+function drawTangentChord(theta) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // =====================
+  // 基本設定
+  // =====================
+  const R = 5;
+  const O = { x: 0, y: 0 };
+  const deg = d => d * Math.PI / 180;
+
+  // =====================
+  // 点 A（接点）
+  // =====================
+  const A = { x: 0, y: -R };
+
+  // =====================
+  // 点 B（∠TAB = theta）
+  // 接線は水平 → AB の傾きで制御
+  // =====================
+  const angleAB = 1.5*Math.PI - deg(2*theta); // 左上方向
+  const B = {
+    x: R * Math.cos(angleAB),
+    y: R * Math.sin(angleAB)
+  };
+
+  // =====================
+  // 点 C（ランダム円周）
+  // =====================
+  // ∠BAC をランダム設定
+const angleBAC =
+  getRandomInt(40, 155 - theta);
+
+// AC の方向
+const angleAC = angleAB - deg(2*angleBAC);
+
+// 点 C
+const C = {
+  x: R * Math.cos(angleAC),
+  y: R * Math.sin(angleAC)
+};
+
+
+  // =====================
+  // スケーリング
+  // =====================
+  const pts = [
+    A, B, C, O,
+    { x: -R * 2, y: -R },
+    { x:  R * 2, y: -R }
+  ];
+
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width  - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円
+  ctx.beginPath();
+  ctx.arc(tx(O.x), ty(O.y), R * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 接線 TA
+  ctx.beginPath();
+  ctx.moveTo(tx(-R * 2), ty(A.y));
+  ctx.lineTo(tx(R * 2), ty(A.y));
+  ctx.stroke();
+
+  // 三角形
+  function drawSeg(p, q) {
+    ctx.beginPath();
+    ctx.moveTo(tx(p.x), ty(p.y));
+    ctx.lineTo(tx(q.x), ty(q.y));
+    ctx.stroke();
+  }
+
+  drawSeg(A, B);
+  drawSeg(B, C);
+  drawSeg(C, A);
+
+  // =====================
+  // 点表示
+  // =====================
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#000";
+
+  function drawPoint(p, name, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(name, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  drawPoint(O, "O", 6, -6);
+  drawPoint(A, "A", -10, 14);
+  drawPoint(B, "B", 4, -12);
+  drawPoint(C, "C", 6, -6);
+  drawPoint(C, `${theta}°`, -35, 25);
+  drawPoint(B, `${180-theta-angleBAC}°`, 15, 25);
+  drawPoint({ x: -R * 2, y: A.y }, "T", -10, 20);
+
+  // =====================
+  // 角表示 ∠TAB
+  // =====================
+  drawAngleArc(
+    A,
+    B,
+    { x: -1, y: A.y }, // 接線方向
+
+    1,
+    "θ"
+  );
+  drawAngleArc(
+    C,
+    B, // 接線方向
+    A,
+    0.5,
+    ``
+  );
+drawAngleArc(
+    B,
+    A, // 接線方向
+    C,
+    0.5,
+    ``
+  );
+  // =====================
+  // 角弧関数
+  // =====================
+function drawAngleArc(center, p1, p2, radius, label) {
+  let a1 = -Math.atan2(p1.y - center.y, p1.x - center.x);
+  let a2 = -Math.atan2(p2.y - center.y, p2.x - center.x);
+  if(a1<a2){
+  ctx.beginPath();
+  ctx.arc(
+    tx(center.x),
+    ty(center.y),
+    radius * s,
+    a1,
+    a2,
+    a1 < a2
+  );
+  ctx.stroke();
+  }
+else{
+    ctx.beginPath();
+  ctx.arc(
+    tx(center.x),
+    ty(center.y),
+    radius * s,
+    a2,
+    a1,
+    a1 < a2
+  );
+  ctx.stroke();
+}
+  if (label) {
+    const mid = (a1 + a2) / 2;
+    ctx.fillText(
+      label,
+      tx(center.x +2* radius * Math.cos(mid)),
+      ty(center.y - 2*radius * Math.sin(mid))
+    );
+  }
+}
+
+}
+
+function drawTangentChord2(theta) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // =====================
+  // 基本設定
+  // =====================
+  const R = 5;
+  const O = { x: 0, y: 0 };
+  const deg = d => d * Math.PI / 180;
+
+  // =====================
+  // 点 A（接点）
+  // =====================
+  const A = { x: 0, y: -R };
+
+  // =====================
+  // 点 B（∠TAB = theta）
+  // 接線は水平 → AB の傾きで制御
+  // =====================
+  const angleAD = 1.5*Math.PI - deg(2*theta); // 左上方向
+  const D = {
+    x: R * Math.cos(angleAD),
+    y: R * Math.sin(angleAD)
+  };
+
+  const angleBOD=angleAD-Math.PI;
+  const B = {
+    x: R * Math.cos(angleBOD),
+    y: R * Math.sin(angleBOD)
+  };
+  // =====================
+  // 点 C（ランダム円周）
+  // =====================
+  // ∠BAC をランダム設定
+const angleDAC =
+  getRandomInt(30, 150);
+
+// AC の方向
+const angleAC = angleBOD + deg(angleDAC);
+
+// 点 C
+const C = {
+  x: R * Math.cos(angleAC),
+  y: R * Math.sin(angleAC)
+};
+
+
+  // =====================
+  // スケーリング
+  // =====================
+  const pts = [
+    A, B, C, O,
+    { x: -R * 2, y: -R },
+    { x:  R * 2, y: -R }
+  ];
+
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width  - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円
+  ctx.beginPath();
+  ctx.arc(tx(O.x), ty(O.y), R * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 接線 TA
+  ctx.beginPath();
+  ctx.moveTo(tx(-R * 2), ty(A.y));
+  ctx.lineTo(tx(R * 2), ty(A.y));
+  ctx.stroke();
+
+  // 三角形
+  function drawSeg(p, q) {
+    ctx.beginPath();
+    ctx.moveTo(tx(p.x), ty(p.y));
+    ctx.lineTo(tx(q.x), ty(q.y));
+    ctx.stroke();
+  }
+
+  drawSeg(A, D);
+  drawSeg(B, C);
+  drawSeg(C, A);
+  drawSeg(D, B);
+
+  // =====================
+  // 点表示
+  // =====================
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#000";
+
+  function drawPoint(p, name, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(name, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  drawPoint(O, "O", 6, -6);
+  drawPoint(A, "A", -10, 14);
+  drawPoint(B, "B", 10, -10);
+  drawPoint(C, "C", 6, -6);
+  drawPoint(D, "D", -30, 6);
+  
+  drawPoint(C, `θ`, 15, 25);
+  drawPoint({ x: -R * 2, y: A.y }, "T", -10, 20);
+
+  // =====================
+  // 角表示 ∠TAB
+  // =====================
+  drawAngleArc(
+    A,
+    D,
+    { x: -1, y: A.y }, // 接線方向
+    1,
+    `${theta}°`
+  );
+  drawAngleArc(
+    C,
+    A, // 接線方向
+    B,
+    1.2,
+    ``
+  );
+  // =====================
+  // 角弧関数
+  // =====================
+function drawAngleArc(center, p1, p2, radius, label) {
+  let a1 = -Math.atan2(p1.y - center.y, p1.x - center.x);
+  let a2 = -Math.atan2(p2.y - center.y, p2.x - center.x);
+  if(a1<a2){
+  ctx.beginPath();
+  ctx.arc(
+    tx(center.x),
+    ty(center.y),
+    radius * s,
+    a1,
+    a2,
+    a1 < a2
+  );
+  ctx.stroke();
+  }
+else{
+    ctx.beginPath();
+  ctx.arc(
+    tx(center.x),
+    ty(center.y),
+    radius * s,
+    a2,
+    a1,
+    a1 < a2
+  );
+  ctx.stroke();
+}
+  if (label) {
+    const mid = (a1 + a2) / 2;
+    ctx.fillText(
+      label,
+      tx(center.x +2.5* radius * Math.cos(mid)),
+      ty(center.y - 1*radius * Math.sin(mid))
+    );
+  }
+}
+
+}
+
+function drawTwoTangentsPattern(Pdeg) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // =====================
+  // 基本設定
+  // =====================
+  const R = 5;
+  const O = { x: 0, y: 0 };
+  const deg = d => d * Math.PI / 180;
+
+  // =====================
+  // 接点 A, B
+  // =====================
+  const A = {
+    x: R * Math.cos(deg(90 - Pdeg / 2)),
+    y: R * Math.sin(deg(90 - Pdeg / 2))
+  };
+
+  const B = {
+    x: R * Math.cos(deg(-90 + Pdeg / 2)),
+    y: R * Math.sin(deg(-90 + Pdeg / 2))
+  };
+
+  // =====================
+  // 接線の交点 P
+  // =====================
+  const P = {
+    x: R / Math.sin(deg(Pdeg / 2)),
+    y: 0
+  };
+
+  // =====================
+  // 点 C（左側弧）
+  // =====================
+  const angleC = getRandomInt(
+    180 - Pdeg / 2,
+    180 + Pdeg / 2
+  );
+
+  const C = {
+    x: R * Math.cos(deg(angleC)),
+    y: R * Math.sin(deg(angleC))
+  };
+
+  // =====================
+  // スケーリング（円全体保証）
+  // =====================
+  const pts = [
+    A, B, C, P,
+    { x:  R, y:  0 },
+    { x: -R, y:  0 },
+    { x:  0, y:  R },
+    { x:  0, y: -R }
+  ];
+
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const minX = Math.min(...xs), maxX = Math.max(...xs);
+  const minY = Math.min(...ys), maxY = Math.max(...ys);
+
+  const pad = 40;
+  const s = Math.min(
+    (canvas.width  - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円
+  ctx.beginPath();
+  ctx.arc(tx(0), ty(0), R * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 線分描画
+  function drawSeg(p, q) {
+    ctx.beginPath();
+    ctx.moveTo(tx(p.x), ty(p.y));
+    ctx.lineTo(tx(q.x), ty(q.y));
+    ctx.stroke();
+  }
+
+  // 接線
+  drawSeg(P, A);
+  drawSeg(P, B);
+
+  // 弦
+  drawSeg(A, C);
+  drawSeg(B, C);
+
+  // =====================
+  // 点表示
+  // =====================
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#000";
+
+  function drawPoint(p, label, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(label, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  drawPoint(A, "A", 10, -8);
+  drawPoint(B, "B", 10, 16);
+  drawPoint(C, "C", -20, 14);
+  drawPoint(P, "P", 6, -6);
+  drawPoint(O, "O", 6, 14);
+  drawPoint(P, `${Pdeg}°`, -45, 6);
+
+  // =====================
+  // ∠ACB（θ）の角弧表示
+  // =====================
+  drawAngleArc(
+    C,
+    B,
+    A,
+    1,
+    "θ"
+  );
+  drawAngleArc(
+    P,
+    A,
+    B,
+    1,
+    ``
+  );
+  // =====================
+  // 角弧描画関数
+  // =====================
+function drawAngleArc(center, p1, p2, radius, label) {
+  let a1 = -Math.atan2(p1.y - center.y, p1.x - center.x);
+  let a2 = -Math.atan2(p2.y - center.y, p2.x - center.x);
+  if(a1<a2){
+  ctx.beginPath();
+  ctx.arc(
+    tx(center.x),
+    ty(center.y),
+    radius * s,
+    a1,
+    a2,
+    a1 < a2
+  );
+  ctx.stroke();
+  }
+else{
+    ctx.beginPath();
+  ctx.arc(
+    tx(center.x),
+    ty(center.y),
+    radius * s,
+    a2,
+    a1,
+    a1 < a2
+  );
+  ctx.stroke();
+}
+  if (label) {
+    const mid = (a1 + a2) / 2;
+    ctx.fillText(
+      label,
+      tx(center.x +2.5* radius * Math.cos(mid)),
+      ty(center.y - 1*radius * Math.sin(mid))
+    );
+  }
+}
+  
+
+}
+
+function drawPowerOfPointInternal(m0, m1, m2) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const deg = d => d * Math.PI / 180;
+
+  // =====================
+  // 点 P（原点）
+  // =====================
+  const P = { x: 0, y: 0 };
+
+  // =====================
+  // 点 A, C（一直線）
+  // =====================
+  const theta = deg(getRandomInt(20, 40));
+
+  const A = {
+    x: m0 * Math.cos(theta),
+    y: m0 * Math.sin(theta)
+  };
+
+  const C = {
+    x: -m1 * Math.cos(theta),
+    y: -m1 * Math.sin(theta)
+  };
+
+  // =====================
+  // 点 B（y軸）
+  // =====================
+  const B = { x: 0, y: m2 };
+
+  // =====================
+  // 外接円（△ABC）
+  // =====================
+  function circumcenter(A, B, C) {
+    const D = 2 * (
+      A.x * (B.y - C.y) +
+      B.x * (C.y - A.y) +
+      C.x * (A.y - B.y)
+    );
+
+    const Ux = (
+      (A.x * A.x + A.y * A.y) * (B.y - C.y) +
+      (B.x * B.x + B.y * B.y) * (C.y - A.y) +
+      (C.x * C.x + C.y * C.y) * (A.y - B.y)
+    ) / D;
+
+    const Uy = (
+      (A.x * A.x + A.y * A.y) * (C.x - B.x) +
+      (B.x * B.x + B.y * B.y) * (A.x - C.x) +
+      (C.x * C.x + C.y * C.y) * (B.x - A.x)
+    ) / D;
+
+    return { x: Ux, y: Uy };
+  }
+
+  const O = circumcenter(A, B, C);
+  const R = Math.hypot(A.x - O.x, A.y - O.y);
+
+  // =====================
+  // 点 D（円 ∩ y軸）
+  // =====================
+  // (0 - Ox)^2 + (y - Oy)^2 = R^2
+  const dx = -O.x;
+  const h = Math.sqrt(R * R - dx * dx);
+
+  const y1 = O.y + h;
+  const y2 = O.y - h;
+
+  const D = Math.abs(y1 - B.y) > Math.abs(y2 - B.y)
+    ? { x: 0, y: y1 }
+    : { x: 0, y: y2 };
+
+  // =====================
+  // スケーリング
+  // =====================
+  const pts = [A, B, C, D, P];
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+const pad = 40;
+
+const minX = O.x - R;
+const maxX = O.x + R;
+const minY = O.y - R;
+const maxY = O.y + R;
+
+const s = Math.min(
+  (canvas.width  - 2 * pad) / (maxX - minX),
+  (canvas.height - 2 * pad) / (maxY - minY)
+);
+
+const tx = x => pad + (x - minX) * s;
+const ty = y => canvas.height - (pad + (y - minY) * s);
+
+
+  // =====================
+  // 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円
+  ctx.beginPath();
+  ctx.arc(tx(O.x), ty(O.y), R * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  function seg(p, q) {
+    ctx.beginPath();
+    ctx.moveTo(tx(p.x), ty(p.y));
+    ctx.lineTo(tx(q.x), ty(q.y));
+    ctx.stroke();
+  }
+
+  // 線分
+  seg(A, C);
+  seg(B, D);
+  
+  // =====================
+  // 点表示
+  // =====================
+  ctx.font = "1.5rem sans-serif";
+  ctx.fillStyle = "#000";
+
+  function label(p, name, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(name, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  label(A, "A", 14, -4);
+  label(B, "B", -2, -14);
+  label(C, "C",  -14, 20);
+  label(D, "D",  6, 16);
+  label(P, "P",  -16, -14);
+}
+
+function drawPowerOfPointExternal(m0, m1, m2) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const deg = d => d * Math.PI / 180;
+
+  // =====================
+  // 1. 点の設定
+  // =====================
+  const B = { x: 0, y: 0 };
+  const P = { x: -m0, y: 0 };
+  const C = { x: m2, y: 0 };
+
+  const theta = getRandomInt(30, 50);
+
+  const A = {
+    x: -m0 + m1 * Math.cos(deg(theta)),
+    y: m1 * Math.sin(deg(theta))
+  };
+
+  // =====================
+  // 2. 外接円（△ABC）
+  // =====================
+  function circumcenter(A, B, C) {
+    const d = 2 * (
+      A.x * (B.y - C.y) +
+      B.x * (C.y - A.y) +
+      C.x * (A.y - B.y)
+    );
+    if (Math.abs(d) < 1e-10) return null;
+
+    const ux = (
+      (A.x * A.x + A.y * A.y) * (B.y - C.y) +
+      (B.x * B.x + B.y * B.y) * (C.y - A.y) +
+      (C.x * C.x + C.y * C.y) * (A.y - B.y)
+    ) / d;
+
+    const uy = (
+      (A.x * A.x + A.y * A.y) * (C.x - B.x) +
+      (B.x * B.x + B.y * B.y) * (A.x - C.x) +
+      (C.x * C.x + C.y * C.y) * (B.x - A.x)
+    ) / d;
+
+    return { x: ux, y: uy };
+  }
+
+  const O = circumcenter(A, B, C);
+  const R = Math.hypot(O.x - A.x, O.y - A.y);
+
+  // =====================
+  // 3. D：直線 PA と円の交点
+  // =====================
+
+
+const D = {
+  
+    x: -m0 + (m0*(m0+m2)/m1) * Math.cos(deg(theta)),
+    y: (m0*(m0+m2)/m1) * Math.sin(deg(theta))
+  };
+
+  // =====================
+  // 4. スケーリング（円基準）
+  // =====================
+  
+  const pad = 40;
+  const minX = m0>(R-O.x) ? -m0: O.x -R ;
+  const maxX = O.x + R;
+  const minY = O.y - R;
+  const maxY = O.y + R;
+
+  const s = Math.min(
+    (canvas.width - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 5. 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円
+  ctx.beginPath();
+  ctx.arc(tx(O.x), ty(O.y), R * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  function drawSeg(p, q) {
+    ctx.beginPath();
+    ctx.moveTo(tx(p.x), ty(p.y));
+    ctx.lineTo(tx(q.x), ty(q.y));
+    ctx.stroke();
+  }
+
+  drawSeg(P, D);
+  drawSeg(P, B);
+  drawSeg(P, C);
+
+  // =====================
+  // 6. 点表示
+  // =====================
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#000";
+
+  function label(p, name, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(name, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  label(A, "A", -15, -16);
+  label(B, "B", -12, 16);
+  label(C, "C", 6, 16);
+  label(P, "P", -14, -6);
+  label(D, "D", 6, -10);
+}
+
+function drawPowerTangentGeneral(m1, m2, angleTPA) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const deg = d => d * Math.PI / 180;
+
+  // =====================
+  // 基本点
+  // =====================
+  const A = { x: 0, y: 0 };
+  const B = { x: m2, y: 0 };
+  const P = { x: -m1, y: 0 };
+
+  const PT = Math.sqrt(m1 * (m1 + m2));
+  const theta = deg(angleTPA);
+
+  const T = {
+    x: P.x + PT * Math.cos(theta),
+    y: PT * Math.sin(theta)
+  };
+
+  // =====================
+  // 外接円（A,B,T）
+  // =====================
+  function circumcenter(p1, p2, p3) {
+    const d = 2 * (
+      p1.x * (p2.y - p3.y) +
+      p2.x * (p3.y - p1.y) +
+      p3.x * (p1.y - p2.y)
+    );
+
+    const ux =
+      ((p1.x ** 2 + p1.y ** 2) * (p2.y - p3.y) +
+       (p2.x ** 2 + p2.y ** 2) * (p3.y - p1.y) +
+       (p3.x ** 2 + p3.y ** 2) * (p1.y - p2.y)) / d;
+
+    const uy =
+      ((p1.x ** 2 + p1.y ** 2) * (p3.x - p2.x) +
+       (p2.x ** 2 + p2.y ** 2) * (p1.x - p3.x) +
+       (p3.x ** 2 + p3.y ** 2) * (p2.x - p1.x)) / d;
+
+    return { x: ux, y: uy };
+  }
+
+  const O = circumcenter(A, B, T);
+  const R = Math.hypot(O.x - A.x, O.y - A.y);
+
+  // =====================
+  // スケーリング（円基準）
+  // =====================
+  const pts = [
+    A, B, P, T,
+    { x: O.x + R, y: O.y },
+    { x: O.x - R, y: O.y },
+    { x: O.x, y: O.y + R },
+    { x: O.x, y: O.y - R }
+  ];
+
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const pad = 40;
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  const s = Math.min(
+    (canvas.width - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円
+  ctx.beginPath();
+  ctx.arc(tx(O.x), ty(O.y), R * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 線分
+  function drawSeg(p, q) {
+    ctx.beginPath();
+    ctx.moveTo(tx(p.x), ty(p.y));
+    ctx.lineTo(tx(q.x), ty(q.y));
+    ctx.stroke();
+  }
+
+  drawSeg(P, T); // 接線
+  drawSeg(P, B); // 割線
+  drawSeg(A, B);
+
+  // =====================
+  // 点表示
+  // =====================
+  ctx.font = "1.5rem sans-serif";
+  ctx.fillStyle = "#000";
+
+  function label(p, name, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(name, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  label(P, "P", -14, -6);
+  label(A, "A", -10, 24);
+  label(B, "B", 6, 18);
+  label(T, "T", 6, -6);
+  label(O, "O", 6, 18);
+}
+
+
+
+//円の方程式用関数
+function tenkai(a,b)//(ax+b)^2の展開したときの係数を返す。
+{
+return [a*a,2*a*b,b*b];//次数順に係数を返す。
+
+}
+function distance(a,b,c,x,y){//点と直線の距離
+let p,q,m,n,r;
+p=Math.abs(a*x+b*y+c);
+[m,n]=kanyaku(a*a+b*b,2);//2は数字配列[外，中]
+q=m*n;
+[p,q]=yakubun(p,q);
+r=kanyaku(n,1);//文字列を返す。
+let answer= n===1 ? `${bunsu(p,q)}`: q===1 ? `${keisu(p)}${r}`: `\\frac{${keisu(p)}${r}}{${q}}`;
+return answer;
+}
+
+function generateQuiz() {//問題生成関数
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('solution').textContent = '';
+  let i = parseInt(document.getElementById('modeSelect1').value);
+
+ if ( i === 0) i = getRandomInt(1, 5);//1～5です。
+  let question = '', answer = 0, solution = '';
+    if(i===1){
+    let a,b,c,m,n;
+    m=getRandomInt(2,5);
+    n=1;
+      do{
+    n=getRandomInt(1,5);}while(m===n)
+    [m,n]=yakubun(m,n);
+    let k=getRandomInt(2,3);
+    a=m*k; b=n*k;
+    let j=getRandomInt(0,1);
+    if(j===0){
+    for(let i=1;i<m+n;i++)
+  {
+    if(Math.abs(b-a)<(m+n)*i && (m+n)*i <a+b)
+    {c=(m+n)*i;}
+    else{
+     if(Math.abs(b-a)<(m+n)*i+1 && (m+n)*i+1 <a+b)
+    {c=(m+n)*i+1;}
+    if(Math.abs(b-a)<(m+n)*i-1 && (m+n)*i-1 <a+b)
+    {c=(m+n)*i-1;}
+    }
+
+  }
+  question=`$$ \\mathrm{AB=${a}，BC=${c}，CA=${b}}である。$$
+  $$\\angle \\mathrm{BAC の二等分線と BC との交点をDとするとき，BDの長さを求めよ。} $$`;
+  solution=`$$ 三角形の内角の二等分線の性質より $$
+  $$ \\mathrm{AB:AC=BD:CD} $$
+  $$ゆえに　\\mathrm{BD:CD=${m}:${n}}$$
+  $$ よって，\\mathrm{BD= BC\\times\\frac{${m}}{${m}+${n}}=${c}\\times
+  \\frac{${m}}{${m+n}}=${bunsu(c*m,m+n)} } $$ `;
+}
+    if(j===1){
+    for(let i=1;i<m+n;i++)
+  {
+    if(Math.abs(b-a)<Math.abs(m-n)*i && Math.abs(m-n)*i <a+b)
+    {c=Math.abs(m-n)*i;}
+    else{
+     if(Math.abs(b-a)<Math.abs(m-n)*i+1 && Math.abs(m-n)*i+1 <a+b)
+    {c=Math.abs(m-n)*i+1;}
+    if(Math.abs(b-a)<Math.abs(m-n)*i-1 && Math.abs(m-n)*i-1 <a+b)
+    {c=Math.abs(m-n)*i-1;}
+    }
+
+  }
+  question=`$$ \\mathrm{AB=${a}，BC=${c}，CA=${b}}である。$$
+  $$\\angle \\mathrm{A の外角の二等分線と BC との交点をDとするとき，BDの長さを求めよ。} $$`;
+  solution=`$$ 三角形の内角の二等分線の性質より $$
+  $$ \\mathrm{AB:AC=BD:CD} $$
+  $$ゆえに　\\mathrm{BD:CD=${m}:${n}}$$
+  $$ よって，\\mathrm{BD= BC\\times\\frac{${m}}{${m>n ? `${m}-${n}` : `${n}-${m}`}
+  }=${c}\\times
+  \\frac{${m}}{${Math.abs(m-n)}}=${bunsu(c*m,Math.abs(m-n))} } $$ `;
+}
+drawTriangleFigure(a, b, c, m, n, j);
+  }
+
+  if(i===2){
+    question=``;
+    let j,m,n,x;
+    m=getRandomInt(20,40);
+      n=getRandomInt(20,40);
+    j=getRandomInt(0,3);
+    if(j===0){
+      question+=`$$\\angle \\mathrm{ABO=${m}^{\\circ}，\\angle ACO=${n}^{\\circ}のとき，}$$
+      $$\\angle \\mathrm{BAC を求めよ。}
+      ただし，\\mathrm{Oは三角形ABCの外心とする。}$$`
+       x=m+n;//mは∠ABO，nは∠ACO，αは∠BAC
+       solution=`$$ \\mathrm{Oは\\triangle ABC の外心であるから }$$
+       $$\\mathrm{ OA=OB=OCである。}$$
+       $$\\mathrm{ よって，　\\triangle OAB，\\triangle OCAは二等辺三角形である。} $$
+       $$\\mathrm{ ゆえに，\\angle BAO=${m}^{\\circ}，\\angle CAO=${n}^{\\circ} }$$
+       $$\\mathrm{ よって，\\angle BAC=${m}^{\\circ}+${n}^{\\circ}=${x}^{\\circ} }$$`;
+       drawCircumcenterFigure(j, m, n);
+    }
+    if(j===1){
+      question+=`$$\\angle \\mathrm{ABO=${m}^{\\circ}，\\angle ACO=${n}^{\\circ}のとき，}$$
+      $$\\angle \\mathrm{OBC を求めよ。}
+      ただし，\\mathrm{Oは三角形ABCの外心とする。}$$`
+      x=90-(m+n);//mは∠ABO，nは∠ACO，αは∠OBC
+       solution=`$$ \\mathrm{Oは\\triangle ABC の外心であるから }$$
+       $$\\mathrm{ OA=OB=OCである。}$$
+       $$\\mathrm{ よって，　\\triangle OAB，\\triangle OCA，\\triangle OBCは二等辺三角形である。} $$
+       $$ \\mathrm{\\angle BAO=${m}^{\\circ}，\\angle CAO=${n}^{\\circ}}$$
+       $$ よって，\\mathrm{\\angle ABC +\\angle BCA + \\angle CAB =180^{\\circ} }$$
+       $$\\mathrm{2\\angle OBC+${m}\\times 2+${n}\\times 2=180 }$$
+       $$ ゆえに，　\\mathrm{\\angle OBC =${x}^{\\circ} }$$`;
+       drawCircumcenterFigure(j, m, n);
+       
+    }
+    if(j===2){
+      question+=`$$\\angle \\mathrm{ABI=${m}^{\\circ}，\\angle ACI=${n}^{\\circ}のとき，}$$
+      $$\\angle \\mathrm{CAB を求めよ。}$$
+      $$ただし，\\mathrm{Iは三角形ABCの内心とする。}$$`
+      x=(90-(m+n))*2;//mは∠ABI，nは∠ACI，αは∠IAC
+       solution=`$$ \\mathrm{ Iは\\triangle ABC の内心であるから }$$
+       $$ \\mathrm{ \\angle ABI=\\angle IBC =${m}^{\\circ} }$$
+       $$ \\mathrm{ \\angle BCI=\\angle ICA =${n}^{\\circ} }$$ 
+       $$ よって，\\mathrm{ \\angle ABC+\\angle BCA+\\angle CAB=$180^{\\circ} }$$
+       $$\\mathrm{ \\angle BAC +${m}^{\\circ}\\times 2+${n}^{\\circ}\\times 2=180^{\\circ} }$$
+       $$ ゆえに，　\\mathrm{\\angle BAC =${x}^{\\circ} }$$`;
+      drawIncenter_j2(m, n);
+    }
+        if(j===3){
+      question+=`$$\\angle \\mathrm{BAC=${180-2*m-2*n}^{\\circ}のとき，}$$
+      $$\\angle \\mathrm{BIC を求めよ。}$$
+      $$\\mathrm{ただし，Iは三角形ABCの内心とする。}$$`
+      x=180-(m+n);//mは∠BAI，αは∠BIC
+       solution=`$$ \\mathrm{Iは\\triangle ABC の内心であるから }$$
+       $$ \\mathrm{ \\angle ABI=\\angle IBC }$$
+       $$ \\mathrm{ \\angle BCI=\\angle ICA }$$
+       $$また，\\mathrm{ \\triangle ABC の内角の和は180^{\\circ}であるから }$$
+       $$ \\mathrm{ \\angle BAC +\\angle ABC+\\angle BCA=180^{\\circ} }$$ 
+       $$ よって， \\mathrm{ \\angle ABC+\\angle BCA=${2*(m+n)}^{\\circ} }$$
+       $$\\mathrm{ 2\\times \\angle CBI +2\\times \\angle BCI=${2*(m+n)}^{\\circ} }$$
+       $$\\mathrm{ \\angle CBI +\\angle BCI=${m+n}^{\\circ} }$$
+       $$ ゆえに，　\\mathrm{\\angle BIC =180^{\\circ}-${m+n}^{\\circ}=${x}^{\\circ} }$$`;
+       drawIncenter_j2(m, n);
+    }
+    
+  }
+  if(i===3){
+    let m,n;
+    m=[getRandomInt(1,5),getRandomInt(1,5),0];
+    n=yakubun(m[0],m[1]);
+    m[2]=getRandomInt(m[0]+1,m[0]*2);
+    m[0]=n[0];
+    m[1]=n[1];
+    n=yakubun(m[2],m[0]);
+    let k=getRandomInt(0,3);
+    if(k===0){
+    question=`$$ \\mathrm{\\triangle ABC において，点R は辺ABを${m[0]}:${m[1]}に内分し，}$$
+    $$\\mathrm{点 P は辺BCを${n[0]}:${n[1]}}に外分するとする。$$
+     $$ このとき，\\mathrm{CQ:QA} の比を求めよ。$$`;
+     answer=yakubun(m[1],m[2]);
+  solution=`$$
+  \\mathrm{\\triangle ABCにおいて}
+  メネラウスの定理より$$
+  $$\\mathrm{\\frac{AR}{RB}\\cdot \\frac{BP}{PC}\\cdot \\frac{CQ}{QA}}=1$$
+  $$\\mathrm{\\frac{${m[0]}}{${m[1]}}\\cdot \\frac{${n[0]}}{${n[1]}}\\cdot \\frac{CQ}{QA}}=1$$
+  $$\\mathrm{\\frac{CQ}{QA}=${bunsu(m[1],m[2])}}$$
+  $$よって，\\mathrm{CQ:QA=${answer[0]}:${answer[1]}}$$`;
+  drawMenelausFigure(m, n);
+    }
+    if(k===1){
+      question=`$$ \\mathrm{\\triangle ABC において，点R は辺ABを${m[0]}:${m[1]}に内分し，}$$
+    $$\\mathrm{点 P は辺BCを${n[0]}:${n[1]}}に外分するとする。$$
+     $$ このとき，\\mathrm{PQ:QR} の比を求めよ。$$`;
+     answer=yakubun(m[0]+m[1],m[2]-m[0]);
+  solution=`$$
+  \\mathrm{\\triangle RBPにおいて}
+  メネラウスの定理より$$
+  $$\\mathrm{\\frac{RA}{AB}\\cdot \\frac{BC}{CP}\\cdot \\frac{PQ}{QR}}=1$$
+  $$\\mathrm{\\frac{${m[0]}}{${m[1]+m[0]}}\\cdot \\frac{${n[0]-n[1]}}{${n[1]}}\\cdot \\frac{PQ}{QR}}=1$$
+  $$\\mathrm{\\frac{PQ}{QR}=${bunsu(m[0]+m[1],m[2]-m[0])}}$$
+  $$よって，\\mathrm{PQ:QR=${answer[0]}:${answer[1]}}$$`;
+      drawMenelausFigure(m, n);
+    }
+    if(k===2){
+      question=`$$ \\mathrm{\\triangle ABC において，辺ABを${m[0]}:${m[1]}に内分する点をR，}$$
+    $$\\mathrm{辺ACを${n[1]}:${n[0]}に内分する点をQ}とする。$$
+    $$\\mathrm{線分BQと線分CRの交点をO，AOとBCの交点をPとする。}$$
+     $$ このとき，\\mathrm{BP:PC} の比を求めよ。$$`;
+     answer=yakubun(m[1],m[2]);
+  solution=`$$
+  \\mathrm{\\triangle ABCにおいて}
+  チェバの定理より$$
+  $$\\mathrm{\\frac{AR}{RB}\\cdot \\frac{BP}{PC}\\cdot \\frac{CQ}{QA}}=1$$
+  $$\\mathrm{\\frac{${m[0]}}{${m[1]}}\\cdot\\frac{BP}{PC}} \\cdot\\frac{${n[0]}}{${n[1]}} =1$$
+  $$\\mathrm{\\frac{BP}{PC}=${bunsu(m[1],m[2])}}$$
+  $$よって，\\mathrm{BP:PC=${answer[0]}:${answer[1]}}$$`;
+  drawCevaFigure(m, n);
+
+    }
+        if(k===3){
+          answer=yakubun(m[1],m[2]);
+      question=`$$ \\mathrm{\\triangle ABC において，辺ABを${m[0]}:${m[1]}に内分する点をR，}$$
+    $$\\mathrm{辺BCを${answer[0]}:${answer[1]}に内分する点をP}とする。$$
+    $$\\mathrm{線分APと線分CRの交点をO，BOとCAの交点をQとする。}$$
+     $$ このとき，\\mathrm{AQ:QC} の比を求めよ。$$`;
+     
+  solution=`$$
+  \\mathrm{\\triangle ABCにおいて}
+  チェバの定理より$$
+  $$\\mathrm{\\frac{AR}{RB}\\cdot \\frac{BP}{PC}\\cdot \\frac{CQ}{QA}}=1$$
+  $$\\mathrm{\\frac{${m[0]}}{${m[1]}}\\cdot\\frac{${answer[0]}}{${answer[1]}} \\cdot\\frac{CQ}{QA}}  =1$$
+  $$\\mathrm{\\frac{CQ}{QA}=${bunsu(n[0],n[1])}}$$
+  $$よって，\\mathrm{AQ:QC=${n[1]}:${n[0]}}$$`;
+  drawCevaFigure(m, n);
+
+    }
+
+    }
+
+    if(i===4){
+      let j=getRandomInt(1,4)
+    if(j===1){//パターン1
+      let theta,a;
+      let k=getRandomInt(0,1);
+      a=k===0 ?getRandomInt(20,80)*2: 180 ;
+      theta=a/2;
+drawInscribedAnglePattern1(a);
+question=`$$次の図において，\\thetaの大きさを求めよ。$$
+$$ただし，点\\mathrm{O}は円の中心とする。$$`;
+solution=`$$ 円周角の定理より，\\mathrm{\\angle BAC=\\frac{1}{2}\\angle BOC} $$
+$$ よって　\\mathrm{\\angle BAC=${theta}}$$`;
+    }  
+    if (j === 2) {
+  const theta = getRandomInt(20, 60); // ∠ADB
+  const phi = 90 - theta;            // ∠ACD
+
+  question = `
+  $$ 次の図において，\\thetaの大きさを求めよ。$$
+  
+  `;
+
+  solution = `
+  $$ \\mathrm{BD} は円の直径であるから，$$
+  $$ \\mathrm{\\angle BAD = 90^{\\circ} }$$
+      $$また，円周角の定理より$$
+      $$\\mathrm{\\angle ABD=\\angle ACD=${phi}^{\\circ}}$$
+  $$ よって，\\mathrm{ \\angle ABD + \\angle ADB = 90^{\\circ}  }$$
+
+  $$ ゆえに，\\mathrm{\\theta = 90^{\\circ} - ${phi}^{\\circ}
+     = ${theta}^{\\circ} }$$
+  `;
+
+  drawInscribedAnglePattern2(theta);
+}
+    if(j===3){
+      let a =[getRandomInt(12,45)*4,0,0] ;//順にa,b,cの数値設定
+      a[1]=getRandomInt(15,76-a[0]/4)*2;
+      a[2]=getRandomInt(15,74-a[0]/4)*2;;
+      let x=[180-(a[0]+a[2])/2 , (a[0]+a[1])/2];//∠BCD,∠ADCの大きさの設定。
+      answer=[180-x[0],x[1]];// \\alpha=\\angle BAC，\\beta=\\angle ABE
+
+drawCyclicPatternCustom(a[0],a[1],a[2]);
+question=`$$次の図において，\\alpha ，\\betaの大きさを求めよ。$$`;
+solution=`$$
+\\mathrm{四角形ABCDは円に内接しているので}$$
+$$\\mathrm{\\angle BAC+\\angle BCD=180^{\\circ}}$$
+$$ゆえに　\\mathrm{\\alpha =180^{\\circ}-${x[0]}^{\\circ}=${answer[0]}^{\\circ}}$$
+$$また，\\mathrm{\\angle ABE=\\angle ADC}であるから$$
+$$\\beta=${answer[1]}^{\\circ}
+$$`;
+    }
+if(j===4){
+      let a =[getRandomInt(25,30)*4,0,0] ;//順にa,b,cの数値設定
+      a[2]=getRandomInt(100-a[0]/2,89-a[0]/4)*2;
+      a[1]=getRandomInt(91-a[0]/2,a[2]/2-10)*2;
+      let x=[(a[0]+a[2])/2 , (a[0]+a[1])/2];//∠BAD,∠ADCの大きさの設定。ABCDの形を定めるために使用。表示はしない。
+      answer=180-x[0];// \\theta=\\angle BCD
+      //直線BAとCDの交点をP，BCとDAとの交点をQとする。
+      let p=[x[0]-x[1],x[0]+x[1]-180];//\\angle AQB，\\angle APDこの角度は表示する。
+question=`$$次の図において，\\mathrm{\\angle APD=${p[1]}^{\\circ}，\\angle AQB=${p[0]}^{\\circ}であるとき，}$$
+$$\\thetaの大きさを求めよ。$$`;
+solution=`$$
+\\mathrm{四角形ABCDは円に内接しているので}$$
+$$\\mathrm{\\angle PAD=\\angle BCD=\\theta}$$
+$$また，\\mathrm{\\triangle PADにおいて，\\angle ABD=\\angle PAD+\\angle APD}であるから$$
+$$\\mathrm{\\angle ADC=\\theta+${p[1]}}$$
+$$よって，\\mathrm{\\triangle QCD において，\\angle
+DQC+\\angle QDC+\\angle QCD=180^{\\circ}}より$$
+$$ゆえに　 ${p[0]}^{\\circ}+\\theta +(\\theta +${p[1]}^{\\circ})=180^{\\circ}$$
+$$これを解いて　　\\theta=${answer}^{\\circ}
+$$`;
+drawCyclicQuadIntersection(a[0], a[1],a[2],p);
+    }
+    }
+    if(i===5){
+      let j=getRandomInt(1,4)
+      if(j===1){
+        let m;
+        m=[getRandomInt(5,9),getRandomInt(1,4),getRandomInt(1,8)];
+        a=m[0]+m[1];
+        b=m[1]+m[2];
+        c=m[0]+m[2];
+drawIncircleTriangle(m);
+        let k=getRandomInt(1,2);
+        if(k===1){
+          question=`$$\\mathrm{BC=${a}，CA=${b}，AB=${c}である\\triangle ABC}の$$
+          $$内接円と辺\\mathrm{BC，CA，ABの接点をそれぞれP，Q，Rとする。}$$
+          $$このとき，\\mathrm{BP}の長さを求めよ$$`;
+          solution=`$$ \\mathrm{BP=}xとおくと  $$
+          $$ \\mathrm{BP=BR=}x$$
+          $$\\mathrm{AR=AQ=}${c}-x$$
+          $$\\mathrm{CP=CQ=}${a}-x $$
+          $$\\mathrm{よって，AC=AQ+CQ=}(${c}-x)+(${a}-x)=${c+a}-2x $$
+          $$\\mathrm{AC=}${b}であるから $$
+          $$${c+a}-2x=${b} $$
+          $$ これを解いて　　x=${m[0]}$$
+          $$ ゆえに　　\\mathrm{BP=}${m[0]} $$`
+                }
+        if(k===2){
+          question=`$$\\mathrm{BC=${a}，AB=${c}である\\triangle ABC}の$$
+          $$内接円と辺\\mathrm{BC，CA，ABの接点をそれぞれP，Q，Rとする。}$$
+          $$\\mathrm{BP=${m[0]}}のとき，\\mathrm{AC}の長さを求めよ$$`;
+
+          solution=`
+          $$\\mathrm{CP=BC-BP=${a}-${m[0]}}=${m[1]}$$
+          $$\\mathrm{CP=CQ}であるから$$
+          $$\\mathrm{CQ=}${m[1]}$$
+          $$また， \\mathrm{BP=BR}であるから$$
+          $$ \\mathrm{BR=}${m[0]}$$
+          $$\\mathrm{AR=BA-BR}=${c}-${m[0]}=${m[2]}$$
+          $$\\mathrm{AR=AQ}であるから$$
+          $$\\mathrm{AQ=${m[2]}} $$
+          $$ したがって　　\\mathrm{CA=CQ+AQ=}${m[1]}+${m[2]}=${b} $$`
+        }
+      }
+    if(j===2){
+      let theta=getRandomInt(60,100);
+      drawTangentChord(theta);
+      question=`$$次の図で，直線\\mathrm{ATは円Oの接線である。}角 \\thetaを求めよ。$$ `;
+      solution=`$$ 接弦定理より，\\mathrm{\\angle CAT=\\angle CBA=${theta}^{\\circ} }$$`;
+      }
+      if(j===3){
+      let theta=getRandomInt(30,70);
+      drawTangentChord2(theta);
+      question=`$$次の図で，直線\\mathrm{ATは円Oの接線である。}角 \\thetaを求めよ。$$ `;
+      solution=`$$ 接弦定理より，\\mathrm{\\angle ACD=\\angle DAT=${theta}^{\\circ} }$$
+      $$また，\\mathrm{BDは円Oの直径であるから，\\angle BCD=90^{\\circ}}$$
+      $$ よって，\\mathrm{\\angle BCA=\\angle BCD-\\angle ACD=${90-theta}^{\\circ}} $$`;
+      }
+      if(j===4){
+        let P=getRandomInt(20,40)*2;
+        drawTwoTangentsPattern(P);
+        question=`$$次の図で，直線\\mathrm{AP，BPは円Oの接線である。}角 \\thetaを求めよ。$$ `;
+        solution=`$$ \\mathrm{PA=PBであるから}$$
+        $$ \\mathrm{\\angle PAB=\\angle PBA}$$
+        $$ したがって，\\mathrm{\\angle PBA=${90-P/2}}^{\\circ}$$
+        $$ よって，接弦定理により，\\mathrm{\\angle ACB=\\angle PAB=${90-P/2}^{\\circ}} $$`;
+      }
+    }
+
+    if(i===6){
+      let j=getRandomInt(1,5);
+      if(j===1){
+        let m=[getRandomInt(1,7),getRandomInt(3,8),getRandomInt(2,7)];
+         drawPowerOfPointInternal(m[0], m[1], m[2]);
+         question=`$$ \\mathrm{AP=${m[0]}，CP=${m[1]}，BP=${m[2]}であるとき，} $$
+         $$\\mathrm{DP}の長さを求めよ。 $$`;
+         solution=`$$方べきの定理より$$
+         $$ \\mathrm{AP\\cdot CP=BP\\cdot DP} $$
+         $$ ${m[0]}\\cdot ${m[1]}=${m[2]}\\cdot \\mathrm{DP} $$
+         $$ \\mathrm{DP=}${bunsu(m[0]*m[1],m[2])}$$`;
+      }
+      if(j===2){
+        let m=[getRandomInt(2,4),getRandomInt(2,4),getRandomInt(3,6)];
+        question=`$$ \\mathrm{BP=${m[0]}，BC=${m[2]}，AP=${m[1]}であるとき，} $$
+         $$\\mathrm{DP}の長さを求めよ。 $$`;
+         solution=`$$方べきの定理より$$
+         $$ \\mathrm{AP\\cdot DP=BP\\cdot CP} $$
+         $$ ${m[1]}\\cdot \\mathrm{DP} =${m[0]}\\cdot ${m[2]+m[0]}$$
+         $$ \\mathrm{DP=}${bunsu(m[0]*(m[2]+m[0]),m[1])}$$`;
+         drawPowerOfPointExternal(m[0], m[1], m[2]);
+      
+      }
+      if(j===3){
+        let m=[0,0,getRandomInt(2,3),0];
+        let n=getRandomInt(1,4);
+        m[3]=m[2]**2 *n;
+        m[0]=(n+1);        
+        m[1]=m[3]-m[0];
+        let x=m[2]*n;
+        question=`$$ \\mathrm{BP=${m[0]}，BC=${m[1]}，AD=${m[2]}であるとき，} $$
+         $$\\mathrm{AP}の長さを求めよ。 $$`;
+         solution=`
+         $$方べきの定理より$$
+         $$ \\mathrm{AP\\cdot DP=BP\\cdot CP} $$
+         $$ \\mathrm{AP \\cdot (AP+${m[2]})}  =${m[0]}\\cdot ${m[1]+m[0]}$$
+         $$ \\mathrm{AP^2 ${moji(m[2],`AP`)}-${m[0]*(m[1]+m[0])}=0  }$$
+         $$ \\mathrm{ (AP+${x+m[2]})(AP-${x})=0  } $$
+         $$\\mathrm{ AP \\gt 0 より，AP=${x} } $$`;
+         drawPowerOfPointExternal(m[0], x, m[1]);
+      
+      }
+      if(j===4){
+        function drawPowerOfPointTangent(R,p) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const O = { x: 0, y: 0 };
+  const P = { x: p, y: 0 };
+
+  // =====================
+  // 接点 A
+  // =====================
+  const h = Math.sqrt(p * p - R * R);
+  const A = {
+    x: (R * R) / p,
+    y: (R * h) / p
+  };
+
+  // =====================
+  // B, C（x軸との交点）
+  // =====================
+  const B = { x: -R, y: 0 };
+  const C = { x: R, y: 0 };
+
+  // =====================
+  // スケーリング（円基準）
+  // =====================
+  const pad = 40;
+  const minX = -R;
+  const maxX = p;
+  const minY = -R;
+  const maxY = R;
+
+  const s = Math.min(
+    (canvas.width - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円
+  ctx.beginPath();
+  ctx.arc(tx(0), ty(0), R * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 接線 PA
+  ctx.beginPath();
+  ctx.moveTo(tx(P.x), ty(P.y));
+  ctx.lineTo(tx(A.x), ty(A.y));
+  ctx.stroke();
+
+  // 半径 OA
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  ctx.moveTo(tx(O.x), ty(O.y));
+  ctx.lineTo(tx(A.x), ty(A.y));
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // PC, PB
+  ctx.beginPath();
+  ctx.moveTo(tx(P.x), ty(P.y));
+  ctx.lineTo(tx(C.x), ty(C.y));
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(tx(P.x), ty(P.y));
+  ctx.lineTo(tx(B.x), ty(B.y));
+  ctx.stroke();
+
+  // =====================
+  // 点表示
+  // =====================
+  ctx.font = "16px sans-serif";
+  ctx.fillStyle = "#000";
+
+  function label(p, name, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(name, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  label(O, "O", -14, 14);
+  label(P, "P", 6, -6);
+  label(A, "A", 6, -6);
+  label(B, "B", -12, 14);
+  label(C, "C", 6, 14);
+}
+      
+  let R = getRandomInt(3,5);
+  const p = getRandomInt(8, 12); // OP
+  drawPowerOfPointTangent(R,p);
+      
+      question=`$$ 円\\mathrm{Oの半径が${R}，PC=${p-R}}のとき，$$
+      $$ \\mathrm{PA}の長さを求めよ。 $$`;
+      solution=`$$方べきの定理より$$
+      $$\\mathrm{PA^{2} =PC\\cdot PB} $$
+      $$\\mathrm{　　=PC\\cdot (PC+CB)} $$
+      $$\\mathrm{　　=${p-R}\\cdot (${p-R}+2\\cdot ${R})} $$
+      $$\\mathrm{　　=${p-R}\\cdot ${p+R}=${p**2-R**2}} $$
+      $$よって，\\mathrm{PA}=${kanyaku(p**2-R**2,1)}$$`;
+    }
+      if(j===5){
+        let m=[getRandomInt(2,5),getRandomInt(2,5)];
+        answer=kanyaku(m[0]*(m[0]+m[1]),1);
+        theta=getRandomInt(20,50);
+        drawPowerTangentGeneral(m[0], m[1], theta);
+        let k=getRandomInt(0,1);
+        if(k===0){
+          question=`$$ \\mathrm{PA=${m[0]},AB=${m[1]}であるとき，}$$
+          $$\\mathrm{PT}の長さを求めよ。$$`;
+          solution=`$$  方べきの定理より，$$
+          $$ \\mathrm{PT^2 =PA\\cdot PB} $$
+          $$ 　　=${m[0]}\\cdot ${m[0]+m[1]}=${m[0]*(m[0]+m[1])} $$
+          $$ よって，\\mathrm{PT=}${answer} $$`;
+        }
+        if(k===1){
+          question=`$$ \\mathrm{AB=${m[1]}，PT=${answer}であるとき，}$$
+          $$\\mathrm{PA}の長さを求めよ。$$`;
+          solution=`$$  方べきの定理より，$$
+          $$ \\mathrm{PT^2 =PA\\cdot PB} $$
+          $$ (${answer})^2=\\mathrm{PA \\cdot (PA+${m[1]})} $$
+          $$ 式を整理して$$
+          $$\\mathrm{PA^2 ${moji(m[1],`PA`)}-${m[1]*(m[0]+m[1])}=0}$$
+          $$これを解いて，\\mathrm{PA=${m[0]}}$$
+          `;
+        }
+      }
+  }
+    document.getElementById('question').innerHTML = question;
+      window.correctAnswer = answer;
+      window.solutionText = solution;
+      MathJax.typeset();
+    }
+
+    function checkAnswer() {
+      const user = parseFloat(document.getElementById('userInput').value);
+      const correct = window.correctAnswer;
+      const feedback = document.getElementById('feedback');
+      feedback.textContent = (user === correct) ? '正解！' : `不正解。正解は ${correct} です。`;
+    }
+
+   function showSolution() {
+  if (!window.solutionText) {
+    document.getElementById('solution').innerHTML = 'まだ問題が生成されていません。';
+    return;
+  }
+  document.getElementById('solution').innerHTML = window.solutionText;
+  MathJax.typeset();
+}
+
+    window.onload = function () {
+      generateQuiz();
+      resizeCanvas();
+    };
+
+    function resizeCanvas() {
+      const canvas = document.getElementById('blackboard');
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+  </script>
+  <script>
+    MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, chtml: { displayAlign: "left" } };
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div id="left-area">
+      <h1>平面図形</h1>
+      <label >モード:
+        <select id="modeSelect1" onchange="generateQuiz()">
+          <option value="1" selected>1.　三角形と角の二等分線</option>
+          <option value="2">2.　三角形の外心・内心</option>
+          <option value="3">3.　チェバ・メネラウスの定理</option>
+          <option value="4">4.　円周角・円に内接する四角形</option>
+          <option value="5">5.　円と直線</option>
+	        <option value="6">6.　方べきの定理</option>
+          <option value="0">0 (ランダム)</option>
+        </select>
+
+        </label>
+      <div id="question" class="question"></div>
+      <canvas id="figureCanvas" style="width:100%; max-width:500px; aspect-ratio: 16 / 9;"></canvas>
+       <div>
+        <button onclick="showSolution()"style="padding: 1em 2em; font-size: 1.2rem;">解説</button>
+        <button onclick="generateQuiz()"style="padding: 1em 2em; font-size: 1.2rem;">再出題</button>
+      </div>
+      <div id="feedback" class="feedback"></div>
+      <div id="solution" class="solution"></div>
+    </div>
+   <div id="right-area">
+      <p>ここにメモを書いたり、図形を描いたりできます。</p>
+      <canvas id="blackboard" width="700"height="700"></canvas>
+<button onclick="clearBoard()"style="padding: 1em 2em; font-size: 1.2rem;">クリア</button>
+<button onclick="toggleEraser()"style="padding: 1em 2em; font-size: 1.2rem;">消しゴム切替</button>
+      
+    </div>
+  </div>
+
+<script>
+  const canvas = document.getElementById('blackboard');
+  const ctx = canvas.getContext('2d');
+  let drawing = false;
+  let isErasing = false; // 消しゴムモードのフラグ
+
+ function toggleEraser() {
+  isErasing = !isErasing;
+
+  const button = document.querySelector('button[onclick="toggleEraser()"]');
+
+  if (isErasing) {
+    button.style.backgroundColor = "crimson";
+    button.style.color = "white";
+    button.textContent = "消しゴム（使用中）";
+  } else {
+    button.style.backgroundColor = "";
+    button.style.color = "";
+    button.textContent = "消しゴム切替";
+  }
+}
+
+
+  function getStrokeStyle() {
+    return isErasing ? "#222" : "white"; // 黒板色 or 白
+  }
+
+  function getLineWidth() {
+    return isErasing ? 25 : 2; // 消しゴムは太め
+  }
+
+  function drawLine(x, y) {
+    ctx.lineTo(x, y);
+    ctx.strokeStyle = getStrokeStyle();
+    ctx.lineWidth = getLineWidth();
+    ctx.stroke();
+  }
+
+  canvas.addEventListener('mousedown', e => {
+    drawing = true;
+    ctx.beginPath();
+    ctx.moveTo(e.offsetX, e.offsetY);
+  });
+
+  canvas.addEventListener('mousemove', e => {
+    if (drawing) drawLine(e.offsetX, e.offsetY);
+  });
+
+  canvas.addEventListener('mouseup', () => drawing = false);
+  canvas.addEventListener('mouseleave', () => drawing = false);
+
+  canvas.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    ctx.beginPath();
+    ctx.moveTo(touch.clientX - rect.left, touch.clientY - rect.top);
+    drawing = true;
+  });
+
+  canvas.addEventListener('touchmove', e => {
+    e.preventDefault();
+    if (!drawing) return;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    drawLine(touch.clientX - rect.left, touch.clientY - rect.top);
+  });
+
+  canvas.addEventListener('touchend', () => drawing = false);
+
+  function clearBoard() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+</script>
+
+</body>
+</html>
