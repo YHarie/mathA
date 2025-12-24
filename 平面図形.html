@@ -2619,6 +2619,173 @@ function drawPowerTangentGeneral(m1, m2, angleTPA) {
   label(O, "O", 6, 18);
 }
 
+function drawCommonTangent(r0, r1, d, k) {
+  const canvas = document.getElementById("figureCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const rect = canvas.getBoundingClientRect();
+  canvas.width = rect.width;
+  canvas.height = rect.height;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // =====================
+  // 1. 接線係数ベクトル (X, Y)
+  // =====================
+  const X =
+    k === 0
+      ? (r0 * r0 + r0 * r1) / d   // 外接線
+      : (r0 * r0 - r0 * r1) / d;  // 内接線
+
+  const Y = Math.sqrt(r0 * r0 - X * X); // 上側接線
+
+  // =====================
+  // 2. 接点 A, B
+  // =====================
+  // A：円O'上
+  const A = {
+    x: X,
+    y: Y
+  };
+
+  // B：円O上
+  const B = k===1 ? {
+    x: X * r1 / r0 +d ,
+    y: Y * r1 / r0
+  }:
+  {
+    x: -X * r1 / r0 +d ,
+    y: -Y * r1 / r0
+  }
+  ;
+  const H=k===1 ? {
+    x: d+X*(r1-r0)/r0,
+    y: Y*(r1-r0)/r0
+  }:
+  {
+    x: d-X*(r1+r0)/r0,
+    y: -Y*(r1+r0)/r0
+  };
+
+  // 円の中心
+  const O  = { x: 0, y: 0 };
+  const Op = { x: d, y: 0 };
+
+  // =====================
+  // 3. スケーリング（円全体）
+  // =====================
+  const pts = [
+    O, Op, A, B,
+    { x:  r1, y:  0 },
+    { x: -r1, y:  0 },
+    { x:  0,  y:  r1 },
+    { x:  0,  y: -r1 },
+    { x:  d + r0, y: 0 },
+    { x:  d - r0, y: 0 },
+    { x:  d, y:  r0 },
+    { x:  d, y: -r0 }
+  ];
+
+  const xs = pts.map(p => p.x);
+  const ys = pts.map(p => p.y);
+
+  const pad = 40;
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  const s = Math.min(
+    (canvas.width  - 2 * pad) / (maxX - minX),
+    (canvas.height - 2 * pad) / (maxY - minY)
+  );
+
+  const tx = x => pad + (x - minX) * s;
+  const ty = y => canvas.height - (pad + (y - minY) * s);
+
+  // =====================
+  // 4. 描画
+  // =====================
+  ctx.lineWidth = 2;
+
+  // 円 O
+  ctx.beginPath();
+  ctx.arc(tx(0), ty(0), r0 * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 円 O'
+  ctx.beginPath();
+  ctx.arc(tx(d), ty(0), r1 * s, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 接線 Xx + Yy = r0^2
+  // 2点で描画
+  const L = 20;
+  const p1 = {
+    x: (r0*r0 - Y * L) / X,
+    y: L
+  };
+  const p2 = {
+    x: (r0*r0 + Y * L) / X,
+    y: -L
+  };
+
+  ctx.beginPath();
+  ctx.moveTo(tx(p1.x), ty(p1.y));
+  ctx.lineTo(tx(p2.x), ty(p2.y));
+  ctx.stroke();
+
+  // 半径（教材用）
+  ctx.setLineDash([6, 6]);
+
+  ctx.beginPath();
+  ctx.moveTo(tx(Op.x), ty(Op.y));
+  ctx.lineTo(tx(B.x), ty(B.y));
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(tx(O.x), ty(O.y));
+  ctx.lineTo(tx(A.x), ty(A.y));
+  ctx.stroke();
+
+    ctx.beginPath();
+  ctx.moveTo(tx(O.x), ty(O.y));
+  ctx.lineTo(tx(Op.x), ty(Op.y));
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(tx(O.x), ty(O.y));
+  ctx.lineTo(tx(H.x), ty(H.y));
+  ctx.stroke();
+
+  
+  ctx.beginPath();
+  ctx.moveTo(tx(B.x), ty(B.y));
+  ctx.lineTo(tx(H.x), ty(H.y));
+  ctx.stroke();
+
+
+  ctx.setLineDash([]);
+
+  // =====================
+  // 5. 点表示
+  // =====================
+  ctx.font = "1.5rem sans-serif";
+  ctx.fillStyle = "#000";
+
+  function label(p, name, dx, dy) {
+    ctx.beginPath();
+    ctx.arc(tx(p.x), ty(p.y), 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(name, tx(p.x) + dx, ty(p.y) + dy);
+  }
+
+  label(O,  "O",  -18, 18);
+  label(Op, "O'",  14, 14);
+  label(A,  "A",   6, -14);
+  label(B,  "B",  -14, -12);
+  label(H,  "H",  8, -8);
+}
+
 
 
 //円の方程式用関数
@@ -3161,7 +3328,33 @@ drawIncircleTriangle(m);
         }
       }
   }
-    document.getElementById('question').innerHTML = question;
+    if(i===7){
+      r=[0,getRandomInt(2,6)];
+      r[0]=getRandomInt(1,r[1]-1);
+      let d=getRandomInt(r[0]+r[1]+1,r[0]+r[1]*2);
+      question=`$$ \\mathrm{直線ABは円O，O'にそれぞれ点A，Bで接している。} $$
+      $$\\mathrm{円Oの半径を${r[1]}，円O'の半径を${r[0]}，線分OO'=${d}とするとき，}$$
+      $$\\mathrm{線分ABの長さを求めよ。} $$`;
+      let k=getRandomInt(0,1);//共通内接線か外接線かの切り替え
+      drawCommonTangent(r[0],r[1],d,k);
+
+      answer=k===1 ? kanyaku(d**2 - (r[0]-r[1])**2 , 1 ):
+                kanyaku(d**2 - (r[0]+r[1])**2 , 1 );
+
+      solution=`$$ \\mathrm{点Oから線分O'Bに引いた垂線と，OBとの交点を} $$
+      $$\\mathrm{Hとする。} $$
+      $$\\mathrm{このとき，四角形AOHB は長方形であるから，} $$
+      $$\\mathrm{AB=OH，OA=BH} $$
+      $$また，\\mathrm{\\triangle O'OH は直角三角形であるから，三平方の定理より} $$
+      $$\\mathrm{OO'^{2}=O'H^{2}+OH^2} $$
+      $$\\mathrm{OH}^2 =${d}^{2}-(${r[1]} ${k===0 ?`+`:`-`} ${r[0]} )^{2} $$
+      
+      $$\\mathrm{よって，OH=}${answer}$$$$
+      すなわち，　\\mathrm{AB}=${answer} $$`;
+
+    } 
+  
+  document.getElementById('question').innerHTML = question;
       window.correctAnswer = answer;
       window.solutionText = solution;
       MathJax.typeset();
@@ -3214,7 +3407,8 @@ drawIncircleTriangle(m);
           <option value="4">4.　円周角・円に内接する四角形</option>
           <option value="5">5.　円と直線</option>
 	        <option value="6">6.　方べきの定理</option>
-          <option value="0">0 (ランダム)</option>
+          <option value="7">7.　2つの円の位置関係</option>
+          <option value="0">ランダム</option>
         </select>
 
         </label>
